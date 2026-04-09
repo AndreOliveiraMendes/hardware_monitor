@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Últimas métricas</h2>
+
+<div class="card">
+<table>
+    <tr>
+        <th>Timestamp</th>
+        <th>Tipo</th>
+        <th>Nome</th>
+        <th>Valor</th>
+    </tr>
+
+    {% for row in rows %}
+    <tr>
+        <td>{{ row[0] }}</td>
+        <td>{{ row[1] }}</td>
+        <td>{{ row[2] }}</td>
+        <td>{{ row[3] }}°C</td>
+    </tr>
+    {% endfor %}
+</table>
+</div>
+
+{% endblock %}

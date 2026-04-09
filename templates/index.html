@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>CPU</h2>
+<div class="card">
+    <ul>
+    {% for core, temp in data.cpu.items() %}
+        <li>{{ core }}: {{ temp }}°C</li>
+    {% endfor %}
+    </ul>
+</div>
+
+<h2>Discos</h2>
+<div class="card">
+    <ul>
+    {% for disk, temp in data.disk.items() %}
+        <li>{{ disk }}: {{ temp }}°C</li>
+    {% endfor %}
+    </ul>
+</div>
+
+{% endblock %}

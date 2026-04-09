@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hardware Monitor</title>
+    <style>
+        body { font-family: Arial; margin: 40px; background: #111; color: #eee; }
+        h1 { color: #0af; }
+        a { color: #0af; margin-right: 10px; }
+        .card { background: #222; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .warn { color: orange; }
+        .crit { color: red; }
+    </style>
+</head>
+<body>
+
+<h1>Hardware Monitor</h1>
+
+<a href="{{ url_for('home') }}">Home</a>
+<a href="{{ url_for('dashboard') }}">Dashboard</a>
+<a href="{{ url_for('metrics') }}">API</a>
+
+<hr>
+
+{% block content %}{% endblock %}
+
+</body>
+</html>

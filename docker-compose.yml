@@ -1,0 +1,17 @@
+services:
+  hardware_monitor:
+    build: .
+    container_name: hardware_monitor
+    environment:
+      TZ: America/Sao_Paulo
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    networks:
+      - shared_net
+    restart: unless-stopped
+
+networks:
+  shared_net:
+    external: true
