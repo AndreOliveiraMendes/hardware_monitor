@@ -1,18 +1,16 @@
 from flask import Flask
-from werkzeug.middleware.proxy_fix import ProxyFix
-from .db import init_db
+
+from app.extension import init_db
+from app.routes import register_blueprints
+#from werkzeug.middleware.proxy_fix import ProxyFix
 
 def create_app():
     app = Flask(__name__)
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_prefix=1)
-
-    # registrar blueprints
-    from .routes.web import web_bp
-    from .routes.api import api_bp
-
-    app.register_blueprint(web_bp)
-    app.register_blueprint(api_bp, url_prefix="/monitor")
+    #app.wsgi_app = ProxyFix(app.wsgi_app, x_prefix=1)
 
     init_db()
+    
+    with app.app_context():
+        register_blueprints(app)
 
     return app

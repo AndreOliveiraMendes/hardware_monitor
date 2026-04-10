@@ -4,11 +4,11 @@ WORKDIR /app
 
 # dependências
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install --root-user-action=ignore --no-cache-dir --upgrade pip && \
+    pip install --root-user-action=ignore --no-cache-dir -r requirements.txt
 
 # app
-COPY app.py .
-COPY templates/ /app/templates/ 
+COPY . .
 
 # garantir pasta do banco
 RUN mkdir -p /app/data

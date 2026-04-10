@@ -1,40 +1,17 @@
-import os
-import sqlite3
+from app.extension import get_conn
 
-DB = os.getenv("DB_PATH", "metrics.db")
-
-def get_conn():
-    return sqlite3.connect(DB)
-
-def init_db():
-    conn = get_conn()
-    cur = conn.cursor()
-
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS metrics (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-            type TEXT,
-            name TEXT,
-            value REAL
-        )
-    """)
-
-    conn.commit()
-    conn.close()
-
-def insert_metric(type_, name, value):
+def insert_metric(dispositive_type, hostname, hostip, name, value):
     conn = get_conn()
     cur = conn.cursor()
 
     cur.execute(
-        "INSERT INTO metrics (type, name, value) VALUES (?, ?, ?)",
-        (type_, name, value)
+        "INSERT INTO metrics (dispositive_type, host_name, host_ip, name, value) VALUES (?, ?, ?, ?, ?)",
+        (dispositive_type, hostname, hostip, name, value)
     )
 
     conn.commit()
     conn.close()
-
+    
 def get_latest_metrics():
     conn = get_conn()
     cur = conn.cursor()
