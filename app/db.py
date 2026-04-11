@@ -24,7 +24,7 @@ def get_latest_metrics():
         WHERE id IN (
             SELECT MAX(id)
             FROM metrics
-            GROUP BY type, name
+            GROUP BY dispositive_type, name
         )
     """)
 
