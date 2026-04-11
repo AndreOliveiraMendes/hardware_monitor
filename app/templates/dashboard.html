@@ -1,27 +1,36 @@
 {% extends "base.html" %}
-
 {% block content %}
-
-<h2>Últimas métricas</h2>
-
-<div class="card">
-<table>
-    <tr>
-        <th>Timestamp</th>
-        <th>Tipo</th>
-        <th>Nome</th>
-        <th>Valor</th>
-    </tr>
-
-    {% for row in rows %}
-    <tr>
-        <td>{{ row[0] }}</td>
-        <td>{{ row[1] }}</td>
-        <td>{{ row[2] }}</td>
-        <td>{{ row[3] }}°C</td>
-    </tr>
-    {% endfor %}
-</table>
-</div>
-
-{% endblock %}
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-auto">
+            <label>Início</label>
+            <input type="datetime-local" name="start" class="form-control" value="{{ request.args.get('start') }}">
+        </div>
+        <div class="col-auto">
+            <label>Fim</label>
+            <input type="datetime-local" name="end" class="form-control" value="{{ request.args.get('end') }}">
+        </div>
+        <div class="col-auto">
+            <label>Tipo</label>
+            <select name="type" class="form-control">
+                <option value="">Todos</option>
+                {% for type in types %}
+                    <option value="{{ type }}" {% if request.args.get('type') == type %}selected{% endif %}>{{ type }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto align-self-end">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+    </form>
+    <h2 class="mb-3">dados coletados no periodo</h2>
+    <div class="card shadow-sm p-3 mb-4">
+        <ul class="list-group list-group-flush">
+            {% for timestamp, tipo, nome, temp in data %}
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>{{ timestamp|datahora }} - {{ tipo }} - {{ nome }}</span>
+                    <span class="fw-bold">{{ temp }}°C</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock content %}

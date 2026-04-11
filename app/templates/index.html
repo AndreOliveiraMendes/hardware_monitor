@@ -1,23 +1,26 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-<h2>CPU</h2>
-<div class="card">
-    <ul>
-    {% for core, temp in data.cpu.items() %}
-        <li>{{ core }}: {{ temp }}°C</li>
-    {% endfor %}
-    </ul>
-</div>
-
-<h2>Discos</h2>
-<div class="card">
-    <ul>
-    {% for disk, temp in data.disk.items() %}
-        <li>{{ disk }}: {{ temp }}°C</li>
-    {% endfor %}
-    </ul>
-</div>
-
-{% endblock %}
+    <h2 class="mb-3">CPU</h2>
+    <div class="card shadow-sm p-3 mb-4">
+        <ul class="list-group list-group-flush">
+            {% for core, temp in data.cpu.items() %}
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>{{ core }}</span>
+                    <span class="fw-bold">{{ temp }}°C</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <h2 class="mb-3">Discos</h2>
+    <div class="card shadow-sm p-3">
+        <ul class="list-group list-group-flush">
+            {% for disk, temp in data.disk.items() %}
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>{{ disk }}</span>
+                    <span class="fw-bold">{{ temp }}°C</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock content %}

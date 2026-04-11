@@ -1,27 +1,33 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Hardware Monitor</title>
-    <style>
-        body { font-family: Arial; margin: 40px; background: #111; color: #eee; }
-        h1 { color: #0af; }
-        a { color: #0af; margin-right: 10px; }
-        .card { background: #222; padding: 15px; margin: 10px 0; border-radius: 8px; }
-        .warn { color: orange; }
-        .crit { color: red; }
-    </style>
-</head>
-<body>
-
-<h1>Hardware Monitor</h1>
-
-<a href="{{ url_for('default.index') }}">Home</a>
-<a href="{{ url_for('visualization.dashboard') }}">Dashboard</a>
-<a href="{{ url_for('visualization.metrics') }}">API</a>
-
-<hr>
-
-{% block content %}{% endblock %}
-
-</body>
+<html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="description" content="hardware, temperature">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="keywords"
+              content="sistema, hardware, monitoramento, temperatura, cpu, disco">
+        <title>Hardware Monitor</title>
+        <link rel="stylesheet"
+              href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">Hardware Monitor</a>
+                <div class="navbar-nav">
+                    <a class="nav-link" href="{{ url_for('default.index') }}">Home</a>
+                    <a class="nav-link" href="{{ url_for('default.metrics') }}">API</a>
+                    <a class="nav-link" href="{{ url_for('visualization.dashboard') }}">Dashboard</a>
+                    
+                </div>
+            </div>
+        </nav>
+        <div class="container mt-4">
+            {% block content %}
+            {% endblock content %}
+        </div>
+        <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+        {% block script %}
+        {% endblock script %}
+    </body>
 </html>
