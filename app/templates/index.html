@@ -4,10 +4,10 @@
     <h2 class="mb-3">CPU</h2>
     <div class="card shadow-sm p-3 mb-4">
         <ul class="list-group list-group-flush">
-            {% for core, temp in data.cpu.items() %}
+            {% for core, info in data.cpu.items() %}
                 <li class="list-group-item d-flex justify-content-between">
                     <span>{{ core }}</span>
-                    <span class="fw-bold">{{ temp }}°C</span>
+		    <span class="fw-bold">{{ info[0] }}°C at {{ info[1]|datahora }}</span>
                 </li>
             {% endfor %}
         </ul>
@@ -15,10 +15,10 @@
     <h2 class="mb-3">Discos</h2>
     <div class="card shadow-sm p-3">
         <ul class="list-group list-group-flush">
-            {% for disk, temp in data.disk.items() %}
+            {% for disk, info in data.disk.items() %}
                 <li class="list-group-item d-flex justify-content-between">
                     <span>{{ disk }}</span>
-                    <span class="fw-bold">{{ temp }}°C</span>
+		    <span class="fw-bold">{{ info[0] }}°C at {{ info[1]|datahora }}</span>
                 </li>
             {% endfor %}
         </ul>

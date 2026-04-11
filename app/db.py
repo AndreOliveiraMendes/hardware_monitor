@@ -19,7 +19,7 @@ def get_latest_metrics():
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT dispositive_type, name, value
+        SELECT datetime(timestamp, 'localtime'), dispositive_type, name, value
         FROM metrics
         WHERE id IN (
             SELECT MAX(id)
@@ -33,11 +33,11 @@ def get_latest_metrics():
 
     data = {"cpu": {}, "disk": {}}
 
-    for type_, name, value in rows:
+    for time, type_, name, value in rows:
         if type_ == "CPU":
-            data["cpu"][name] = value
+            data["cpu"][name] = [value, time]
         elif type_ == "DISK":
-            data["disk"][name] = value
+            data["disk"][name] = [value, time]
 
     return data
 
@@ -56,15 +56,15 @@ def get_metrics(start, end, tipo):
     if start and end:
         start = datetime.fromisoformat(start)
         end = datetime.fromisoformat(end)
-        conditions.append("timestamp BETWEEN ? AND ?")
+        conditions.append("datetime(timestamp, 'localtime')  BETWEEN ? AND ?")
         params.extend([start, end])
     elif start:
         start = datetime.fromisoformat(start)
-        conditions.append("timestamp >= ?")
+        conditions.append("datetime(timestamp, 'localtime') >= ?")
         params.append(start)
     elif end:
         end = datetime.fromisoformat(end)
-        conditions.append("timestamp <= ?")
+        conditions.append("datetime(timestamp, 'localtime' <= ?")
         params.append(end)
 
     if tipo:
