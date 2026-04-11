@@ -17,7 +17,7 @@ def get_latest_metrics():
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT type, name, value
+        SELECT dispositive_type, name, value
         FROM metrics
         WHERE id IN (
             SELECT MAX(id)
