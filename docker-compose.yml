@@ -11,6 +11,7 @@ services:
     networks:
       - shared_net
     restart: unless-stopped
+    command: ["gunicorn", "--reload", "-w", "4", "-b", "0.0.0.0:5000", "wsgi:app"]
 
 networks:
   shared_net:
