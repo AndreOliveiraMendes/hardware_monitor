@@ -46,7 +46,7 @@ def get_metrics(start, end, tipo):
     cur = conn.cursor()
 
     query = """
-        SELECT datetime(timestamp, 'localtime'), type, name, value
+        SELECT datetime(timestamp, 'localtime'), dispositive_type, name, value
         FROM metrics
     """
 
@@ -68,7 +68,7 @@ def get_metrics(start, end, tipo):
         params.append(end)
 
     if tipo:
-        conditions.append("type = ?")
+        conditions.append("dispositive_type = ?")
         params.append(tipo)
 
     if conditions:
@@ -85,7 +85,7 @@ def get_types():
     conn = get_conn()
     cur = conn.cursor()
     
-    cur.execute("SELECT DISTINCT type FROM metrics")
+    cur.execute("SELECT DISTINCT dispositive_type FROM metrics")
     types = [row[0] for row in cur.fetchall()]
     
     return types
