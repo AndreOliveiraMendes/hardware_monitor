@@ -1,15 +1,21 @@
 from flask import Blueprint, render_template, request
 
-from app.db import get_latest_metrics, get_metrics, get_types
+from app.db import get_latest_metrics, get_metrics, get_names, get_types
 
 
 bp = Blueprint('visualization', __name__, url_prefix='/visualization')
+
+@bp.route('/')
+def index():
+    return render_template('visualization/index.html')
 
 @bp.route("/dashboard")
 def dashboard():
     start = request.args.get("start")
     end = request.args.get("end")
     tipo = request.args.get("type")
-    data = get_metrics(start, end, tipo)
+    name = request.args.get("name")
+    data = get_metrics(start, end, tipo, name)
     types = get_types()
-    return render_template("dashboard.html", data=data, types=types)
+    names = get_names()
+    return render_template("visualization/dashboard.html", data=data, types=types, names=names)

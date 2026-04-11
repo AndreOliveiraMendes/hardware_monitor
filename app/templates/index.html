@@ -7,7 +7,7 @@
             {% for core, info in data.cpu.items() %}
                 <li class="list-group-item d-flex justify-content-between">
                     <span>{{ core }}</span>
-		    <span class="fw-bold">{{ info[0] }}°C at {{ info[1]|datahora }}</span>
+		    <span class="fw-bold">{{ info.value }}°C at {{ info.time|datahora }}</span>
                 </li>
             {% endfor %}
         </ul>
@@ -18,7 +18,7 @@
             {% for disk, info in data.disk.items() %}
                 <li class="list-group-item d-flex justify-content-between">
                     <span>{{ disk }}</span>
-		    <span class="fw-bold">{{ info[0] }}°C at {{ info[1]|datahora }}</span>
+		    <span class="fw-bold">{{ info.value }}°C at {{ info.time|datahora }}</span>
                 </li>
             {% endfor %}
         </ul>

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-3">Menu</h3>
+<div class="alert alert-info">
+    Selecione um período e tipo de métrica para visualizar os dados coletados.
+</div>
+<ul class="list-group">
+    <li class="list-group-item"><a href="{{ url_for('visualization.dashboard') }}">Dados de temperatura coletados no período</a></li>
+    <li class="list-group-item"><a href="">picos e vales de temperatura por dia</a></li>
+</ul>
+{% endblock content %}

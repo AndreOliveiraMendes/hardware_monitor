@@ -19,7 +19,7 @@ def get_latest_metrics():
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT datetime(timestamp, 'localtime'), dispositive_type, name, value
+        SELECT datetime(timestamp, 'localtime') as timestamp, dispositive_type, name, value
         FROM metrics
         WHERE id IN (
             SELECT MAX(id)
@@ -35,13 +35,13 @@ def get_latest_metrics():
 
     for time, type_, name, value in rows:
         if type_ == "CPU":
-            data["cpu"][name] = [value, time]
+            data["cpu"][name] = {"value":value, "time":time}
         elif type_ == "DISK":
-            data["disk"][name] = [value, time]
+            data["disk"][name] = {"value":value, "time":time}
 
     return data
 
-def get_metrics(start, end, tipo):
+def get_metrics(start, end, tipo, name):
     conn = get_conn()
     cur = conn.cursor()
 
@@ -71,6 +71,10 @@ def get_metrics(start, end, tipo):
         conditions.append("dispositive_type = ?")
         params.append(tipo)
 
+    if name:
+        conditions.append("name = ?")
+        params.append(name)
+
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
     
@@ -89,3 +93,12 @@ def get_types():
     types = [row[0] for row in cur.fetchall()]
     
     return types
+
+def get_names():
+    conn = get_conn()
+    cur = conn.cursor()
+    
+    cur.execute("SELECT DISTINCT name FROM metrics")
+    names = [row[0] for row in cur.fetchall()]
+    
+    return names
