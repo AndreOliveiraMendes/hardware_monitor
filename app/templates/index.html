@@ -1,26 +1,29 @@
 {% extends "base.html" %}
-
 {% block content %}
-    <h2 class="mb-3">CPU</h2>
-    <div class="card shadow-sm p-3 mb-4">
-        <ul class="list-group list-group-flush">
-            {% for core, info in data.cpu.items() %}
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>{{ core }}</span>
-		    <span class="fw-bold">{{ info.value }}°C at {{ info.time|datahora }}</span>
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
-    <h2 class="mb-3">Discos</h2>
-    <div class="card shadow-sm p-3">
-        <ul class="list-group list-group-flush">
-            {% for disk, info in data.disk.items() %}
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>{{ disk }}</span>
-		    <span class="fw-bold">{{ info.value }}°C at {{ info.time|datahora }}</span>
-                </li>
-            {% endfor %}
-        </ul>
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-semibold">Monitor de Hardware</h1>
+            <p class="lead text-muted">
+                Uma aplicação simples para coletar, armazenar e visualizar métricas de dispositivos em tempo real.
+            </p>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h5 class="card-title mb-3">Sobre o projeto</h5>
+                        <p class="card-text text-muted">
+                            Este sistema foi desenvolvido para monitorar diferentes dispositivos em rede,
+                            coletando informações como temperatura, uso de recursos e conectividade.
+                            Os dados são enviados por agentes distribuídos e centralizados em uma API,
+                            permitindo visualização e análise de forma simples.
+                        </p>
+                        <p class="card-text text-muted mb-0">
+                            A ideia é manter tudo leve, modular e fácil de expandir conforme a necessidade.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock content %}

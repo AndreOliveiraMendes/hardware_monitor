@@ -2,6 +2,7 @@ from datetime import datetime
 
 from app.extension import get_conn
 
+
 def insert_metric(dispositive_type, hostname, hostip, name, value):
     conn = get_conn()
     cur = conn.cursor()

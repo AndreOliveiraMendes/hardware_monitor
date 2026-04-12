@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container py-5">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="display-6 fw-semibold">{{ info.name }}</h1>
+            <p class="text-muted mb-1">Version {{ info.version }}</p>
+            <p class="lead text-muted">Endpoints disponíveis da API para consulta e integração.</p>
+        </div>
+        <!-- Endpoints -->
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                {% for ep in info.endpoints %}
+                    <div class="card mb-3 shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge {% if ep.method == 'GET' %}bg-success {% elif ep.method == 'POST' %}bg-warning text-dark {% elif ep.method == 'DELETE' %}bg-danger {% else %}bg-secondary {% endif %} ">
+                                    {{ ep.method }}
+                                </span>
+                                <code class="text-dark">{{ ep.path }}</code>
+                            </div>
+                            <p class="text-muted mb-3">{{ ep.description }}</p>
+                            <a href="{{ ep.path }}" class="btn btn-sm btn-outline-primary">Testar endpoint</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock content %}

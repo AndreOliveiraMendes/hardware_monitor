@@ -1,5 +1,7 @@
-from flask import Flask
 from datetime import datetime
+
+from flask import Flask
+
 
 def templater_helpers(app:Flask):
     @app.template_filter('dia')

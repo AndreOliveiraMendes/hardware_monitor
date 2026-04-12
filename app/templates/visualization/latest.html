@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2 class="mb-3">CPU</h2>
+    <div class="card shadow-sm p-3 mb-4">
+        <ul class="list-group list-group-flush">
+            {% for core, info in data.cpu.items() %}
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>{{ core }}</span>
+		    <span class="fw-bold">{{ info.value }}°C at {{ info.time|datahora }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <h2 class="mb-3">Discos</h2>
+    <div class="card shadow-sm p-3">
+        <ul class="list-group list-group-flush">
+            {% for disk, info in data.disk.items() %}
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>{{ disk }}</span>
+		    <span class="fw-bold">{{ info.value }}°C at {{ info.time|datahora }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock content %}

@@ -9,6 +9,8 @@
         <title>Hardware Monitor</title>
         <link rel="stylesheet"
               href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+        {% block style %}
+        {% endblock style %}
     </head>
     <body>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -16,9 +18,8 @@
                 <a class="navbar-brand" href="#">Hardware Monitor</a>
                 <div class="navbar-nav">
                     <a class="nav-link" href="{{ url_for('default.index') }}">Home</a>
-                    <a class="nav-link" href="{{ url_for('default.metrics') }}">API</a>
+                    <a class="nav-link" href="{{ url_for('api.menu') }}">API</a>
                     <a class="nav-link" href="{{ url_for('visualization.index') }}">Dashboard</a>
-                    
                 </div>
             </div>
         </nav>

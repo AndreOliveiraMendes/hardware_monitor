@@ -2,7 +2,6 @@ from flask import Blueprint, jsonify, request
 
 from app.db import insert_metric
 
-
 bp = Blueprint('collect', __name__)
 
 @bp.route("/ingest", methods=["POST"])
