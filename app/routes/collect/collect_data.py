@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 
-from app.db import insert_metric
+from app.routes.collect.handler import collect_data
 
 bp = Blueprint('collect', __name__)
 
@@ -12,6 +12,8 @@ def ingest():
         data = [data]
 
     for item in data:
-        insert_metric(item["type"], item["hostname"], item["hostip"],item["name"], item["value"])
+        code, msg = collect_data(item)
+        if code != 200:
+            return jsonify({"error": msg}), code
 
     return jsonify({"status": "ok"})

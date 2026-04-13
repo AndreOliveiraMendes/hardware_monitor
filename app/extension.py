@@ -17,11 +17,16 @@ def init_db():
         CREATE TABLE IF NOT EXISTS metrics (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-            host_name TEXT,
-            host_ip TEXT,
-            dispositive_type TEXT,
+            type TEXT NOT NULL,
+            source TEXT NOT NULL,
+            host_name TEXT NOT NULL,
+            host_ip TEXT NOT NULL,
+            target TEXT,
+            device_type TEXT,
             name TEXT,
-            value REAL
+            value REAL,
+            value_text TEXT,
+            meta TEXT
         )
     """)
 

@@ -9,6 +9,8 @@
                     <span>{{ core }}</span>
 		    <span class="fw-bold">{{ info.value }}°C at {{ info.time|datahora }}</span>
                 </li>
+            {% else %}
+                <li class="list-group-item">No data available</li>
             {% endfor %}
         </ul>
     </div>
@@ -20,6 +22,8 @@
                     <span>{{ disk }}</span>
 		    <span class="fw-bold">{{ info.value }}°C at {{ info.time|datahora }}</span>
                 </li>
+            {% else %}
+                <li class="list-group-item">No data available</li>
             {% endfor %}
         </ul>
     </div>

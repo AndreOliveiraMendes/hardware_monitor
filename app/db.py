@@ -3,29 +3,33 @@ from datetime import datetime
 from app.extension import get_conn
 
 
-def insert_metric(dispositive_type, hostname, hostip, name, value):
-    conn = get_conn()
-    cur = conn.cursor()
-
-    cur.execute(
-        "INSERT INTO metrics (dispositive_type, host_name, host_ip, name, value) VALUES (?, ?, ?, ?, ?)",
-        (dispositive_type, hostname, hostip, name, value)
-    )
-
-    conn.commit()
-    conn.close()
+def insert_metric(**kwargs):
+    # unpack kwargs into fields and values for the SQL query
+    fields = []
+    values = []
+    for key, value in kwargs.items():
+        fields.append(key)
+        values.append(value)
+    
+    # create the SQL query string with placeholders for values
+    query = f"INSERT INTO metrics ({', '.join(fields)}) VALUES ({', '.join(['?'] * len(values))})"
+    
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(query, tuple(values))
+        conn.commit()
     
 def get_latest_metrics():
     conn = get_conn()
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT datetime(timestamp, 'localtime') as timestamp, dispositive_type, name, value
+        SELECT type, datetime(timestamp, 'localtime') as timestamp, device_type, name, value
         FROM metrics
         WHERE id IN (
             SELECT MAX(id)
             FROM metrics
-            GROUP BY dispositive_type, name
+            GROUP BY device_type, name
         )
     """)
 
@@ -34,11 +38,12 @@ def get_latest_metrics():
 
     data = {"cpu": {}, "disk": {}}
 
-    for time, type_, name, value in rows:
-        if type_ == "CPU":
-            data["cpu"][name] = {"value":value, "time":time}
-        elif type_ == "DISK":
-            data["disk"][name] = {"value":value, "time":time}
+    for info_type, time, device_type, name, value in rows:
+        if info_type == "temperature":
+            if device_type.lower() == "cpu":
+                data["cpu"][name] = {"value":value, "time":time}
+            elif device_type.lower() == "disk":
+                data["disk"][name] = {"value":value, "time":time}
 
     return data
 
@@ -47,7 +52,7 @@ def get_metrics(start, end, tipo, name):
     cur = conn.cursor()
 
     query = """
-        SELECT datetime(timestamp, 'localtime'), dispositive_type, name, value
+        SELECT datetime(timestamp, 'localtime'), device_type, name, value
         FROM metrics
     """
 
@@ -69,7 +74,7 @@ def get_metrics(start, end, tipo, name):
         params.append(end)
 
     if tipo:
-        conditions.append("dispositive_type = ?")
+        conditions.append("device_type = ?")
         params.append(tipo)
 
     if name:
@@ -90,7 +95,7 @@ def get_types():
     conn = get_conn()
     cur = conn.cursor()
     
-    cur.execute("SELECT DISTINCT dispositive_type FROM metrics")
+    cur.execute("SELECT DISTINCT device_type FROM metrics")
     types = [row[0] for row in cur.fetchall()]
     
     return types
