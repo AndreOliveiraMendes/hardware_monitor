@@ -1,20 +1,30 @@
 {% extends "base.html" %}
+{% block style %}
+    <meta http-equiv="refresh" content="60">
+{% endblock style %}
 {% block content %}
     <form method="get" class="row g-3 mb-4">
         <div class="col-auto">
             <label>Início</label>
-            <input type="datetime-local" name="start" class="form-control" value="{{ request.args.get('start') }}">
+            <input type="datetime-local"
+                   name="start"
+                   class="form-control"
+                   value="{{ request.args.get('start') }}">
         </div>
         <div class="col-auto">
             <label>Fim</label>
-            <input type="datetime-local" name="end" class="form-control" value="{{ request.args.get('end') }}">
+            <input type="datetime-local"
+                   name="end"
+                   class="form-control"
+                   value="{{ request.args.get('end') }}">
         </div>
         <div class="col-auto">
             <label>Tipo</label>
             <select name="type" class="form-control">
                 <option value="">Todos</option>
                 {% for type in types %}
-                    <option value="{{ type }}" {% if request.args.get('type') == type %}selected{% endif %}>{{ type }}</option>
+                    <option value="{{ type }}"
+                            {% if request.args.get('type') == type %}selected{% endif %}>{{ type }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -23,7 +33,8 @@
             <select name="name" class="form-control">
                 <option value="">Todos</option>
                 {% for name in names %}
-                    <option value="{{ name }}" {% if request.args.get('name') == name %}selected{% endif %}>{{ name }}</option>
+                    <option value="{{ name }}"
+                            {% if request.args.get('name') == name %}selected{% endif %}>{{ name }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -34,15 +45,15 @@
     <h2 class="mb-3">dados coletados:</h2>
     {% if request.args.get('start') and request.args.get('end') %}
         <div class="alert alert-info">
-            Exibindo dados de <strong>{{ request.args.get('start')|datahora }}</strong> até <strong>{{ request.args.get('end')|datahora }}</strong>.
+            Exibindo dados de <strong>{{ request.args.get("start") |datahora }}</strong> até <strong>{{ request.args.get("end") |datahora }}</strong>.
         </div>
     {% elif request.args.get('start') %}
         <div class="alert alert-info">
-            Exibindo dados a partir de <strong>{{ request.args.get('start')|datahora }}</strong>.
+            Exibindo dados a partir de <strong>{{ request.args.get("start") |datahora }}</strong>.
         </div>
     {% elif request.args.get('end') %}
         <div class="alert alert-info">
-            Exibindo dados até <strong>{{ request.args.get('end')|datahora }}</strong>.
+            Exibindo dados até <strong>{{ request.args.get("end") |datahora }}</strong>.
         </div>
     {% endif %}
     <div class="card shadow-sm p-3 mb-4">

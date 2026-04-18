@@ -1,5 +1,7 @@
 {% extends "base.html" %}
-
+{% block style %}
+    <meta http-equiv="refresh" content="60">
+{% endblock style %}
 {% block content %}
     <h2 class="mb-3">CPU</h2>
     <div class="card shadow-sm p-3 mb-4">
@@ -7,7 +9,7 @@
             {% for core, info in data.cpu.items() %}
                 <li class="list-group-item d-flex justify-content-between">
                     <span>{{ core }}</span>
-		    <span class="fw-bold">{{ info.value }}°C at {{ info.time|datahora }}</span>
+                    <span class="fw-bold">{{ info.value }}°C at {{ info.time|datahora }}</span>
                 </li>
             {% else %}
                 <li class="list-group-item">No data available</li>
@@ -20,7 +22,7 @@
             {% for disk, info in data.disk.items() %}
                 <li class="list-group-item d-flex justify-content-between">
                     <span>{{ disk }}</span>
-		    <span class="fw-bold">{{ info.value }}°C at {{ info.time|datahora }}</span>
+                    <span class="fw-bold">{{ info.value }}°C at {{ info.time|datahora }}</span>
                 </li>
             {% else %}
                 <li class="list-group-item">No data available</li>
