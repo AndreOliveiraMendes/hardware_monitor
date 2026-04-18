@@ -1,32 +1,66 @@
 {% extends "base.html" %}
-{% block style %}
-    <meta http-equiv="refresh" content="60">
-{% endblock style %}
 {% block content %}
     <h2 class="mb-3">CPU</h2>
     <div class="card shadow-sm p-3 mb-4">
-        <ul class="list-group list-group-flush">
-            {% for core, info in data.cpu.items() %}
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>{{ core }}</span>
-                    <span class="fw-bold">{{ info.value }}°C at {{ info.time|datahora }}</span>
-                </li>
-            {% else %}
-                <li class="list-group-item">No data available</li>
-            {% endfor %}
+        <ul id="cpu-list" class="list-group list-group-flush">
         </ul>
     </div>
     <h2 class="mb-3">Discos</h2>
     <div class="card shadow-sm p-3">
-        <ul class="list-group list-group-flush">
-            {% for disk, info in data.disk.items() %}
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>{{ disk }}</span>
-                    <span class="fw-bold">{{ info.value }}°C at {{ info.time|datahora }}</span>
-                </li>
-            {% else %}
-                <li class="list-group-item">No data available</li>
-            {% endfor %}
+        <ul id="disk-list" class="list-group list-group-flush">
         </ul>
     </div>
 {% endblock content %}
+{% block script %}
+    <script>
+        async function loadData() {
+            const url = "{{ url_for('api.metrics') }}";
+            const res = await fetch(url);
+            const data = await res.json();
+
+            const cpuList = document.getElementById("cpu-list");
+            const diskList = document.getElementById("disk-list");
+
+            cpuList.innerHTML = "";
+            diskList.innerHTML = "";
+
+            // CPU
+            if (Object.keys(data.cpu).length === 0) {
+                cpuList.innerHTML = '<li class="list-group-item">No data</li>';
+            } else {
+                for (const core in data.cpu) {
+                    const info = data.cpu[core];
+
+                    cpuList.innerHTML += `
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>${core}</span>
+                            <span class="fw-bold">${info.value}°C at ${info.time}</span>
+                        </li>
+                    `;
+                }
+            }
+
+            // DISK
+            if (Object.keys(data.disk).length === 0) {
+                diskList.innerHTML = '<li class="list-group-item">No data</li>';
+            } else {
+                for (const disk in data.disk) {
+                    const info = data.disk[disk];
+
+                    diskList.innerHTML += `
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>${disk}</span>
+                            <span class="fw-bold">${info.value}°C at ${info.time}</span>
+                        </li>
+                    `;
+                }
+            }
+        }
+
+        // carrega na primeira vez
+        loadData();
+
+        // atualiza a cada 60s
+        setInterval(loadData, 60000);
+    </script>
+{% endblock script %}

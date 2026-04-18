@@ -8,7 +8,7 @@
               content="sistema, hardware, monitoramento, temperatura, cpu, disco">
         <title>Hardware Monitor</title>
         <link rel="stylesheet"
-              href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+              href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
         {% block style %}
         {% endblock style %}
     </head>
@@ -27,7 +27,7 @@
             {% block content %}
             {% endblock content %}
         </div>
-        <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
         {% block script %}
         {% endblock script %}
     </body>

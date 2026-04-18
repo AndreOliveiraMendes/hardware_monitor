@@ -10,8 +10,7 @@ def index():
 
 @bp.route("/latest")
 def latest():
-    data = get_latest_metrics()
-    return render_template('visualization/latest.html', data=data)
+    return render_template('visualization/latest.html')
 
 @bp.route("/dashboard")
 def dashboard():
