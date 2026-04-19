@@ -26,7 +26,7 @@
             </select>
         </div>
         <div class="col-auto">
-            <label>Tipo (temperatura)</label>
+            <label>Tipo</label>
             <select name="device_type" class="form-control">
                 <option value="">Todos</option>
                 {% for type in device_types %}
@@ -36,7 +36,7 @@
             </select>
         </div>
         <div class="col-auto">
-            <label>Nome (temperatura)</label>
+            <label>Nome</label>
             <select name="name" class="form-control">
                 <option value="">Todos</option>
                 {% for name in names %}
@@ -58,7 +58,9 @@
 {% endblock content %}
 {% block script %}
     <script>
+        const form = document.querySelector("form");
         const url = "{{ url_for('api.all_metrics') }}"
+
         function formatInfo(params) {
             const start = params.get("start");
             const end = params.get("end");
@@ -113,16 +115,62 @@
             }
         }
 
+        async function loadFilters() {
+            const params = new URLSearchParams(new FormData(form));
+
+            const res = await fetch("/api/filters?" + params.toString());
+            const data = await res.json();
+
+            fillSelect("info_type", data.info_types);
+            fillSelect("device_type", data.device_types);
+            fillSelect("name", data.names);
+        }
+
+        function fillSelect(name, values) {
+            const select = document.querySelector(`select[name="${name}"]`);
+            if (!select) return;
+
+            const current = select.value;
+
+            select.innerHTML = `<option value="">Todos</option>`;
+
+            for (const v of values) {
+                select.innerHTML += `
+                    <option value="${v}" ${v === current ? "selected" : ""}>
+                        ${v}
+                    </option>
+                `;
+            }
+        }
+
+        // quando mudar info_type → reseta device + name
+        document.querySelector("select[name='info_type']")
+            .addEventListener("change", () => {
+                document.querySelector("select[name='device_type']").value = "";
+                document.querySelector("select[name='name']").value = "";
+                loadFilters();
+            });
+
+        // quando mudar device_type → reseta name
+        document.querySelector("select[name='device_type']")
+            .addEventListener("change", () => {
+                document.querySelector("select[name='name']").value = "";
+                loadFilters();
+            });
+
+        // submit normal continua igual
         document.querySelector("form").addEventListener("submit", (e) => {
             e.preventDefault();
 
-            const params = new URLSearchParams(new FormData(e.target));
-            const newUrl = window.location.pathname + "?" + params.toString();
+            const params = new URLSearchParams(new FormData(form));
+            history.pushState(null, "", "?" + params.toString());
 
-            history.pushState(null, "", newUrl);
             loadData();
+            loadFilters();
         });
 
+        // inicial
+        loadFilters();
         loadData();
     </script>
 {% endblock script %}

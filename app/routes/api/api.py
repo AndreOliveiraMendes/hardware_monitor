@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, render_template, request, url_for
 
-from app.db import get_latest_metrics, get_metrics
+from app.db import get_filters, get_latest_metrics, get_metrics
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -85,3 +85,16 @@ def all_metrics():
         })
 
     return jsonify(data)
+
+@bp.route("/filters")
+def filters():
+    info_type = request.args.get("info_type")
+    device_type = request.args.get("device_type")
+
+    info_types, device_types, names = get_filters(info_type, device_type)
+
+    return jsonify({
+        "info_types": info_types,
+        "device_types": device_types,
+        "names": names
+    })

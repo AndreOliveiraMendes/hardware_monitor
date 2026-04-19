@@ -101,29 +101,44 @@ def get_metrics(start, end, tipo_info, tipo_temp, name):
     conn.close()
     return rows
 
-def get_info_types():
+def get_filters(info_type, device_type):
     conn = get_conn()
     cur = conn.cursor()
-    
+
+    # 1. sempre retorna info_types
     cur.execute("SELECT DISTINCT type FROM metrics")
-    types = [row[0] for row in cur.fetchall()]
-    
-    return types    
+    info_types = [r[0] for r in cur.fetchall()]
 
-def get_device_types_temperature():
-    conn = get_conn()
-    cur = conn.cursor()
-    
-    cur.execute("SELECT DISTINCT device_type FROM metrics WHERE type = 'temperature'")
-    types = [row[0] for row in cur.fetchall()]
-    
-    return types
+    # 2. device_types só se temperature
+    device_types = []
+    if info_type == "temperature" or not info_type:
+        cur.execute("""
+            SELECT DISTINCT device_type
+            FROM metrics
+            WHERE type = 'temperature'
+        """)
+        device_types = [r[0] for r in cur.fetchall()]
 
-def get_names():
-    conn = get_conn()
-    cur = conn.cursor()
-    
-    cur.execute("SELECT DISTINCT name FROM metrics WHERE type = 'temperature'")
-    names = [row[0] for row in cur.fetchall()]
-    
-    return names
+    # 3. names dependem de device_type + info_type
+    names = []
+
+    if info_type == "temperature":
+        if device_type:
+            cur.execute("""
+                SELECT DISTINCT name
+                FROM metrics
+                WHERE type = 'temperature'
+                AND device_type = ?
+            """, (device_type,))
+        else:
+            cur.execute("""
+                SELECT DISTINCT name
+                FROM metrics
+                WHERE type = 'temperature'
+            """)
+        names = [r[0] for r in cur.fetchall()]
+    else:
+        cur.execute("SELECT DISTINCT name FROM metrics WHERE name IS NOT NULL")
+        names = [r[0] for r in cur.fetchall()]
+        
+    return info_types, device_types, names
