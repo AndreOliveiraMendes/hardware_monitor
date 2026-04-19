@@ -16,17 +16,27 @@
                    value="{{ request.args.get('end') }}">
         </div>
         <div class="col-auto">
-            <label>Tipo</label>
-            <select name="type" class="form-control">
+            <label>informação</label>
+            <select name="info_type" class="form-control">
                 <option value="">Todos</option>
-                {% for type in types %}
+                {% for type in info_types %}
                     <option value="{{ type }}"
                             {% if request.args.get('type') == type %}selected{% endif %}>{{ type }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="col-auto">
-            <label>Nome</label>
+            <label>Tipo (temperatura)</label>
+            <select name="device_type" class="form-control">
+                <option value="">Todos</option>
+                {% for type in device_types %}
+                    <option value="{{ type }}"
+                            {% if request.args.get('type') == type %}selected{% endif %}>{{ type }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <label>Nome (temperatura)</label>
             <select name="name" class="form-control">
                 <option value="">Todos</option>
                 {% for name in names %}

@@ -49,7 +49,7 @@ def get_latest_metrics():
 
     return data
 
-def get_metrics(start, end, tipo, name):
+def get_metrics(start, end, tipo_info, tipo_temp, name):
     conn = get_conn()
     cur = conn.cursor()
 
@@ -75,25 +75,42 @@ def get_metrics(start, end, tipo, name):
         conditions.append("datetime(timestamp, 'localtime') <= ?")
         params.append(end)
 
-    if tipo:
-        conditions.append("device_type = ?")
-        params.append(tipo)
-
-    if name:
-        conditions.append("name = ?")
-        params.append(name)
+    if tipo_info == "battery":
+        conditions.append("type = ?")
+        params.append(tipo_info)
+    elif tipo_info == "temperature":
+        conditions.append("type = ?")
+        params.append(tipo_info)
+        if tipo_temp:
+            conditions.append("device_type = ?")
+            params.append(tipo_temp)
+        if name:
+            conditions.append("name = ?")
+            params.append(name)
 
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
     
     query += " ORDER BY timestamp DESC LIMIT 100"
+    
+    print(query)
+    print(params)
 
     cur.execute(query, params)
     rows = cur.fetchall()
     conn.close()
     return rows
 
-def get_types():
+def get_info_types():
+    conn = get_conn()
+    cur = conn.cursor()
+    
+    cur.execute("SELECT DISTINCT type FROM metrics")
+    types = [row[0] for row in cur.fetchall()]
+    
+    return types    
+
+def get_device_types_temperature():
     conn = get_conn()
     cur = conn.cursor()
     

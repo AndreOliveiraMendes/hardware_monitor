@@ -62,10 +62,11 @@ def last_metrics():
 def all_metrics():
     start = request.args.get("start")
     end = request.args.get("end")
-    tipo = request.args.get("type")
+    tipo_info = request.args.get("info_type")
+    tipo_temp = request.args.get("device_type")
     name = request.args.get("name")
     
-    rows = get_metrics(start, end, tipo, name)
+    rows = get_metrics(start, end, tipo_info, tipo_temp, name)
 
     data = []
     for row in rows:
