@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
+
+from app.db import get_daily_temperature_picks
 
 bp = Blueprint('visualization', __name__, url_prefix='/visualization')
 
@@ -13,3 +15,20 @@ def latest():
 @bp.route("/dashboard")
 def dashboard():
     return render_template("visualization/dashboard.html")
+
+@bp.route("/extremos")
+def min_max_temp():
+    device_type = request.args.get("device_type")
+    name = request.args.get("name")
+    selected = {
+        "device_type": device_type,
+        "name": name
+    }
+
+    data = get_daily_temperature_picks(device_type, name)
+
+    return render_template(
+        "visualization/minmax.html",
+        data = data,
+        selected = selected
+    )

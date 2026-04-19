@@ -139,3 +139,35 @@ def get_filters(info_type, device_type):
         names = [r[0] for r in cur.fetchall()]
         
     return info_types, device_types, names
+
+def get_daily_temperature_picks(device_type=None, name=None):
+    conn = get_conn()
+    cur = conn.cursor()
+
+    query = """
+        SELECT
+            DATE(timestamp) as day,
+            device_type,
+            name,
+            MIN(value) as min_temp,
+            MAX(value) as max_temp,
+            AVG(value) as avg
+        FROM metrics
+        WHERE type = 'temperature'
+    """
+
+    params = []
+
+    if device_type:
+        query += " AND device_type = ?"
+        params.append(device_type)
+
+    if name:
+        query += " AND name = ?"
+        params.append(name)
+
+    query += " GROUP BY day, device_type, name ORDER BY day"
+
+    cur.execute(query, params)
+
+    return cur.fetchall()

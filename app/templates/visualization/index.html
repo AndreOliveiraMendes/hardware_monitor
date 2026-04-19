@@ -10,7 +10,7 @@
             <a href="{{ url_for('visualization.dashboard') }}">Dados coletados no período</a>
         </li>
         <li class="list-group-item">
-            <a href="">picos e vales de temperatura por dia</a>
+            <a href="{{ url_for('visualization.min_max_temp') }}">picos e vales de temperatura por dia</a>
         </li>
     </ul>
 {% endblock content %}

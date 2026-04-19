@@ -31,7 +31,7 @@
                 <option value="">Todos</option>
                 {% for type in device_types %}
                     <option value="{{ type }}"
-                            {% if request.args.get('type') == type %}selected{% endif %}>{{ type }}</option>
+                            {% if request.args.get('device_type') == type %}selected{% endif %}>{{ type }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -60,6 +60,7 @@
     <script>
         const form = document.querySelector("form");
         const url = "{{ url_for('api.all_metrics') }}"
+        const url_filters = "{{ url_for('api.filters') }}"
 
         function formatInfo(params) {
             const start = params.get("start");
@@ -118,7 +119,7 @@
         async function loadFilters() {
             const params = new URLSearchParams(new FormData(form));
 
-            const res = await fetch("/api/filters?" + params.toString());
+            const res = await fetch(url_filters + "?" + params.toString());
             const data = await res.json();
 
             fillSelect("info_type", data.info_types);

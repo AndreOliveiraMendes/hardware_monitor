@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2 class="mb-4">Extremos de Temperatura por Dia</h2>
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-auto">
+            <label>Tipo</label>
+            <select name="device_type" class="form-control">
+                <option value="">Todos</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <label>Nome</label>
+            <select name="name" class="form-control">
+                <option value="">Todos</option>
+            </select>
+        </div>
+        <div class="col-auto align-self-end">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+    </form>
+    <div class="card shadow-sm p-3 mb-4">
+        <div class="alert alert-info">
+            {% if data %}
+                {{ data|length }} linhas de dados coletados
+            {% else %}
+                Nenhum dado encontrado
+            {% endif %}
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for day, dtype, name, min_temp, max_temp, avg in data %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold">{{ day }} | {{ dtype }} | {{ name }}</span>
+                    <span>
+                        <span class="text-primary fw-bold">min: {{ min_temp }}°C</span>
+                        |
+                        <span class="text-danger fw-bold">max: {{ max_temp }}°C</span>
+                        |
+                        <span class="text-info fw-bold">media: {{ avg | round(2) }}°C</span>
+                    </span>
+                </li>
+            {% else %}
+                <li class="list-group-item">Sem dados disponíveis</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock content %}
+{% block script %}
+    <script>
+        const form = document.querySelector("form");
+        const url_filters = "{{ url_for('api.filters') }}";
+        const selected = {{ selected|tojson }};
+
+        async function loadFilters() {
+            let params = new URLSearchParams(new FormData(form));
+            params.set("device_type", selected['device_type']);
+            params.set("name", selected['name']);
+            params.set("info_type", "temperature");
+
+            const res = await fetch(url_filters + "?" + params.toString());
+            const data = await res.json();
+
+            fillSelect("device_type", data.device_types);
+            fillSelect("name", data.names);
+        }
+
+        function fillSelect(name, values) {
+            const select = document.querySelector(`select[name="${name}"]`);
+            if (!select) return;
+
+            const current = selected[name];  // 🔥 aqui
+
+            select.innerHTML = `<option value="">Todos</option>`;
+
+            for (const v of values) {
+                select.innerHTML += `
+                    <option value="${v}" ${v === current ? "selected" : ""}>
+                        ${v}
+                    </option>
+                `;
+            }
+        }
+
+        // inicial
+        loadFilters();
+    </script>
+{% endblock script %}
