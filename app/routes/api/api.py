@@ -66,7 +66,5 @@ def all_metrics():
     name = request.args.get("name")
     
     data = get_metrics(start, end, tipo, name)
-    
-    print(data)
 
     return jsonify(data)
