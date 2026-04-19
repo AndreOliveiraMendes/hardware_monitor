@@ -85,30 +85,21 @@
             }
 
             for (const item of data) {
-                const [timestamp, infotype, tipo, nome, temp] = item;
+                const {timestamp, infotype, device_type, name, value } = item;
 
-		if (infotype === "temperature") {
-                    list.innerHTML += `
-                        <li class="list-group-item d-flex justify-content-between">
-			    <span>${timestamp} - ${infotype} - ${tipo} - ${nome}</span>
-                            <span class="fw-bold">${temp}°C</span>
-                        </li>
-                    `;
-		} else if(infotype === "battery") {
-		    list.innetHTML += `
-			<li class="list-group-item d-flex justify-content-between">
-			    <span>${timestamp} - ${infotype}</span>
-			    <span class="fw-bold">${temp}%</span>
-			</li>
-		    `;
-		} else {
-		    list.innetHTML += `
-			<li class="list-group-item d-flex justify-content-between">
-			    <span>${timestamp} ${infotype}</span>
-			    <span class="fw-bold"> desconhecido</span>
-			</li>
-		    `;
-		} 
+                let unit = infotype === "temperature" ? "°C" :
+                        infotype === "battery" ? "%" : "";
+
+                let label = `${timestamp} - ${infotype}`;
+                if (device_type) label += ` - ${device_type}`;
+                if (name) label += ` - ${name}`;
+
+                list.innerHTML += `
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>${label}</span>
+                        <span class="fw-bold">${value ?? "?"}${unit}</span>
+                    </li>
+                `;
             }
         }
 

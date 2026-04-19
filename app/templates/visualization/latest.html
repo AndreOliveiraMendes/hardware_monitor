@@ -10,6 +10,11 @@
         <ul id="disk-list" class="list-group list-group-flush">
         </ul>
     </div>
+    <h2 class="mb-3">Batteria</h2>
+    <div class="card shadow-sm p-3">
+        <ul id="battery" class="list-group list-group-flush">
+        </ul>
+    </div>
 {% endblock content %}
 {% block script %}
     <script>
@@ -20,6 +25,7 @@
 
             const cpuList = document.getElementById("cpu-list");
             const diskList = document.getElementById("disk-list");
+            const battery = document.getElementById("battery");
 
             cpuList.innerHTML = "";
             diskList.innerHTML = "";
@@ -54,6 +60,20 @@
                         </li>
                     `;
                 }
+            }
+
+            // BATTERY
+            if (!data.battery) {
+                battery.innerHTML = '<li class="list-group-item">No data</li>';
+            } else {
+                const info = data.battery;
+
+                battery.innerHTML = `
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Bateria</span>
+                        <span class="fw-bold">${info.value ?? "?"}% at ${info.time ?? "-"}</span>
+                    </li>
+                `;
             }
         }
 

@@ -36,7 +36,7 @@ def get_latest_metrics():
     rows = cur.fetchall()
     conn.close()
 
-    data = {"cpu": {}, "disk": {}}
+    data = {"cpu": {}, "disk": {}, "battery": None}
 
     for info_type, time, device_type, name, value in rows:
         if info_type == "temperature":
@@ -44,6 +44,8 @@ def get_latest_metrics():
                 data["cpu"][name] = {"value":value, "time":time}
             elif device_type.lower() == "disk":
                 data["disk"][name] = {"value":value, "time":time}
+        elif info_type == "battery":
+            data["battery"] = {"value":value, "time":time}
 
     return data
 

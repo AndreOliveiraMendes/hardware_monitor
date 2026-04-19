@@ -65,6 +65,16 @@ def all_metrics():
     tipo = request.args.get("type")
     name = request.args.get("name")
     
-    data = get_metrics(start, end, tipo, name)
+    rows = get_metrics(start, end, tipo, name)
+
+    data = []
+    for row in rows:
+        data.append({
+            "timestamp": row[0],
+            "infotype": row[1],
+            "device_type": row[2],
+            "name": row[3],
+            "value": row[4],
+        })
 
     return jsonify(data)
