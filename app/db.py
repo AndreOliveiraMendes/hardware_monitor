@@ -86,9 +86,6 @@ def get_metrics(start, end, tipo, name):
     
     query += " ORDER BY timestamp DESC LIMIT 100"
     
-    print(query)
-    print(params)
-
     cur.execute(query, params)
     rows = cur.fetchall()
     conn.close()
