@@ -33,7 +33,13 @@ def menu():
                         "example": "2026-04-18T23:59"
                     },
                     {
-                        "name": "type",
+                        "name": "info_type",
+                        "type": "string",
+                        "required": False,
+                        "example": "temperature"        
+                    },
+                    {
+                        "name": "device_type",
                         "type": "string",
                         "required": False,
                         "example": "CPU"
