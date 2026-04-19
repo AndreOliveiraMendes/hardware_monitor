@@ -7,21 +7,48 @@ bp = Blueprint('api', __name__, url_prefix='/api')
 @bp.route("/")
 def menu():
     info = {
-            "name": "Monitor API",
-            "version": "1.0",
-            "endpoints": [
-                {
-                    "path": url_for('api.last_metrics'),
-                    "method": "GET",
-                    "description": "Get latest metrics"
-                },
-                {
-                    "path": url_for('api.all_metrics'),
-                    "method": "GET",
-                    "description": "Get all metrics acording to the aplied filters"
-                }
-            ]
+        "name": "Monitor API",
+        "version": "1.0",
+        "endpoints": [
+            {
+                "path": url_for('api.last_metrics'),
+                "method": "GET",
+                "description": "Get latest metrics"
+            },
+            {
+                "path": url_for('api.all_metrics'),
+                "method": "GET",
+                "description": "Get all metrics according to the applied filters",
+                "params": [
+                    {
+                        "name": "start",
+                        "type": "datetime",
+                        "required": False,
+                        "example": "2026-04-18T00:00"
+                    },
+                    {
+                        "name": "end",
+                        "type": "datetime",
+                        "required": False,
+                        "example": "2026-04-18T23:59"
+                    },
+                    {
+                        "name": "type",
+                        "type": "string",
+                        "required": False,
+                        "example": "CPU"
+                    },
+                    {
+                        "name": "name",
+                        "type": "string",
+                        "required": False,
+                        "example": "Core 0"
+                    }
+                ]
+            }
+        ]
     }
+
     if "application/json" in request.headers.get("Accept", ""):
         return jsonify(info)
     else:
