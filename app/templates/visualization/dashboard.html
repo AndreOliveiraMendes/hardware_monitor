@@ -1,7 +1,4 @@
 {% extends "base.html" %}
-{% block style %}
-    <meta http-equiv="refresh" content="60">
-{% endblock style %}
 {% block content %}
     <form method="get" class="row g-3 mb-4">
         <div class="col-auto">
@@ -43,27 +40,72 @@
         </div>
     </form>
     <h2 class="mb-3">dados coletados:</h2>
-    {% if request.args.get('start') and request.args.get('end') %}
-        <div class="alert alert-info">
-            Exibindo dados de <strong>{{ request.args.get("start") |datahora }}</strong> até <strong>{{ request.args.get("end") |datahora }}</strong>.
-        </div>
-    {% elif request.args.get('start') %}
-        <div class="alert alert-info">
-            Exibindo dados a partir de <strong>{{ request.args.get("start") |datahora }}</strong>.
-        </div>
-    {% elif request.args.get('end') %}
-        <div class="alert alert-info">
-            Exibindo dados até <strong>{{ request.args.get("end") |datahora }}</strong>.
-        </div>
-    {% endif %}
+    <div id="info"></div>
     <div class="card shadow-sm p-3 mb-4">
-        <ul class="list-group list-group-flush">
-            {% for timestamp, tipo, nome, temp in data %}
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>{{ timestamp|datahora }} - {{ tipo }} - {{ nome }}</span>
-                    <span class="fw-bold">{{ temp }}°C</span>
-                </li>
-            {% endfor %}
+        <ul id="data-list" class="list-group list-group-flush">
         </ul>
     </div>
 {% endblock content %}
+{% block script %}
+    <script>
+        const url = "{{ url_for('api.all_metrics') }}"
+        function formatInfo(params) {
+            const start = params.get("start");
+            const end = params.get("end");
+
+            if (start && end) {
+                return `Exibindo de <b>${start}</b> até <b>${end}</b>`;
+            } else if (start) {
+                return `Exibindo a partir de <b>${start}</b>`;
+            } else if (end) {
+                return `Exibindo até <b>${end}</b>`;
+            }
+            return "";
+        }
+
+        async function loadData() {
+            const params = new URLSearchParams(window.location.search);
+
+            const res = await fetch(url + "?" + params.toString());
+            const data = await res.json();
+
+            const list = document.getElementById("data-list");
+            const info = document.getElementById("info");
+
+            list.innerHTML = "";
+
+            const infoText = formatInfo(params);
+            if (infoText) {
+                info.innerHTML = `<div class="alert alert-info">${infoText}</div>`;
+            }
+
+            if (data.length === 0) {
+                list.innerHTML = '<li class="list-group-item">No data</li>';
+                return;
+            }
+
+            for (const item of data) {
+                const [timestamp, tipo, nome, temp] = item;
+
+                list.innerHTML += `
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>${timestamp} - ${tipo} - ${nome}</span>
+                        <span class="fw-bold">${temp}°C</span>
+                    </li>
+                `;
+            }
+        }
+
+        document.querySelector("form").addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const params = new URLSearchParams(new FormData(e.target));
+            const newUrl = window.location.pathname + "?" + params.toString();
+
+            history.pushState(null, "", newUrl);
+            loadData();
+        });
+
+        loadData();
+    </script>
+{% endblock script %}

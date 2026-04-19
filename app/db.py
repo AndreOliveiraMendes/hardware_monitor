@@ -70,7 +70,7 @@ def get_metrics(start, end, tipo, name):
         params.append(start)
     elif end:
         end = datetime.fromisoformat(end)
-        conditions.append("datetime(timestamp, 'localtime' <= ?")
+        conditions.append("datetime(timestamp, 'localtime') <= ?")
         params.append(end)
 
     if tipo:
@@ -85,6 +85,9 @@ def get_metrics(start, end, tipo, name):
         query += " WHERE " + " AND ".join(conditions)
     
     query += " ORDER BY timestamp DESC LIMIT 100"
+    
+    print(query)
+    print(params)
 
     cur.execute(query, params)
     rows = cur.fetchall()

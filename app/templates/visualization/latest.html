@@ -14,7 +14,7 @@
 {% block script %}
     <script>
         async function loadData() {
-            const url = "{{ url_for('api.metrics') }}";
+            const url = "{{ url_for('api.last_metrics') }}";
             const res = await fetch(url);
             const data = await res.json();
 
