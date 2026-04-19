@@ -52,7 +52,7 @@ def get_metrics(start, end, tipo, name):
     cur = conn.cursor()
 
     query = """
-        SELECT datetime(timestamp, 'localtime'), device_type, name, value
+        SELECT datetime(timestamp, 'localtime'), type, device_type, name, value
         FROM metrics
     """
 
@@ -95,7 +95,7 @@ def get_types():
     conn = get_conn()
     cur = conn.cursor()
     
-    cur.execute("SELECT DISTINCT device_type FROM metrics")
+    cur.execute("SELECT DISTINCT device_type FROM metrics WHERE type = 'temperature'")
     types = [row[0] for row in cur.fetchall()]
     
     return types
@@ -104,7 +104,7 @@ def get_names():
     conn = get_conn()
     cur = conn.cursor()
     
-    cur.execute("SELECT DISTINCT name FROM metrics")
+    cur.execute("SELECT DISTINCT name FROM metrics WHERE type = 'temperature'")
     names = [row[0] for row in cur.fetchall()]
     
     return names

@@ -85,14 +85,30 @@
             }
 
             for (const item of data) {
-                const [timestamp, tipo, nome, temp] = item;
+                const [timestamp, infotype, tipo, nome, temp] = item;
 
-                list.innerHTML += `
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>${timestamp} - ${tipo} - ${nome}</span>
-                        <span class="fw-bold">${temp}°C</span>
-                    </li>
-                `;
+		if (infotype === "temperature") {
+                    list.innerHTML += `
+                        <li class="list-group-item d-flex justify-content-between">
+			    <span>${timestamp} - ${infotype} - ${tipo} - ${nome}</span>
+                            <span class="fw-bold">${temp}°C</span>
+                        </li>
+                    `;
+		} else if(infotype === "battery") {
+		    list.innetHTML += `
+			<li class="list-group-item d-flex justify-content-between">
+			    <span>${timestamp} - ${infotype}</span>
+			    <span class="fw-bold">${temp}%</span>
+			</li>
+		    `;
+		} else {
+		    list.innetHTML += `
+			<li class="list-group-item d-flex justify-content-between">
+			    <span>${timestamp} ${infotype}</span>
+			    <span class="fw-bold"> desconhecido</span>
+			</li>
+		    `;
+		} 
             }
         }
 
