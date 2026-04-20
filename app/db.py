@@ -49,7 +49,7 @@ def get_latest_metrics():
 
     return data
 
-def get_metrics(start, end, tipo_info, tipo_temp, name):
+def get_metrics(start, end, tipo_info, tipo_temp, name, page = 0):
     conn = get_conn()
     cur = conn.cursor()
 
@@ -92,6 +92,10 @@ def get_metrics(start, end, tipo_info, tipo_temp, name):
         query += " WHERE " + " AND ".join(conditions)
     
     query += " ORDER BY timestamp DESC LIMIT 100"
+    
+    if page:
+        query += " OFFSET ?"
+        params.append(100*page)
 
     cur.execute(query, params)
     rows = cur.fetchall()
@@ -140,13 +144,13 @@ def get_filters(info_type, device_type):
         
     return info_types, device_types, names
 
-def get_daily_temperature_picks(device_type=None, name=None):
+def get_daily_temperature_picks(device_type=None, name=None, page=0):
     conn = get_conn()
     cur = conn.cursor()
 
     query = """
         SELECT
-            DATE(timestamp) as day,
+            DATE(datetime(timestamp, 'localtime')) as day,
             device_type,
             name,
             MIN(value) as min_temp,
@@ -167,6 +171,12 @@ def get_daily_temperature_picks(device_type=None, name=None):
         params.append(name)
 
     query += " GROUP BY day, device_type, name ORDER BY day"
+    
+    query += " LIMIT 20"
+    
+    if page:
+        query += " OFFSET ?"
+        params.append(20*page)
 
     cur.execute(query, params)
 

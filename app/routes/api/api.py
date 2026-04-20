@@ -49,6 +49,31 @@ def menu():
                         "type": "string",
                         "required": False,
                         "example": "Core 0"
+                    },
+                    {
+                        "name": "page",
+                        "type": "integer",
+                        "required": False,
+                        "example": 0
+                    }
+                ]
+            },
+            {
+                "path": url_for('api.filters'),
+                "method": "GET",
+                "description": "get relevant filters for info_type, device_type and name",
+                "params": [
+                    {
+                        "name": "info_type",
+                        "type": "string",
+                        "required": False,
+                        "example": "temperature"
+                    },
+                    {
+                        "name": "device_type",
+                        "type": "string",
+                        "required": False,
+                        "example": "CPU"
                     }
                 ]
             }
@@ -66,13 +91,17 @@ def last_metrics():
 
 @bp.route("/metrics")
 def all_metrics():
+    try:
+        page = int(request.args.get("page", 0))
+    except (ValueError, TypeError):
+        page = 0
     start = request.args.get("start")
     end = request.args.get("end")
     tipo_info = request.args.get("info_type")
     tipo_temp = request.args.get("device_type")
     name = request.args.get("name")
     
-    rows = get_metrics(start, end, tipo_info, tipo_temp, name)
+    rows = get_metrics(start, end, tipo_info, tipo_temp, name, page)
 
     data = []
     for row in rows:

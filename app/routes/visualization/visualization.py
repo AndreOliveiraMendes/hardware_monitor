@@ -24,8 +24,13 @@ def min_max_temp():
         "device_type": device_type,
         "name": name
     }
+    
+    try:
+        page = int(request.args.get("page", 0))
+    except (ValueError, TypeError):
+        page = 0
 
-    data = get_daily_temperature_picks(device_type, name)
+    data = get_daily_temperature_picks(device_type, name, page)
 
     return render_template(
         "visualization/minmax.html",

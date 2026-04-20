@@ -45,6 +45,10 @@
                 {% endfor %}
             </select>
         </div>
+        <div class="col-auto">
+            <label>Page</label>
+            <input type="number" name="page" value="{{ request.args.get('page', 0) }}" class="form-control">
+        </div>
         <div class="col-auto align-self-end">
             <button type="submit" class="btn btn-primary">Filtrar</button>
         </div>
@@ -97,13 +101,17 @@
                 return;
             }
 
+            let page = params.get('page')
+            let index = 100*page + 1;
+
             for (const item of data) {
                 const {timestamp, infotype, device_type, name, value } = item;
+                
 
                 let unit = infotype === "temperature" ? "°C" :
                         infotype === "battery" ? "%" : "";
 
-                let label = `${timestamp} - ${infotype}`;
+                let label = `[${index}] ${timestamp} - ${infotype}`;
                 if (device_type) label += ` - ${device_type}`;
                 if (name) label += ` - ${name}`;
 
@@ -113,6 +121,8 @@
                         <span class="fw-bold">${value ?? "?"}${unit}</span>
                     </li>
                 `;
+
+                index += 1;
             }
         }
 
