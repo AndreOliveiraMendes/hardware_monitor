@@ -56,11 +56,22 @@
         const form = document.querySelector("form");
         const url_filters = "{{ url_for('api.filters') }}";
         const selected = {{ selected|tojson }};
+        let first = true;
 
         async function loadFilters() {
             let params = new URLSearchParams(new FormData(form));
-            params.set("device_type", selected['device_type']);
-            params.set("name", selected['name']);
+            if (first) {
+                if (selected['device_type'])
+                    params.set("device_type", selected['device_type']);
+                
+                if (selected['name'])
+                    params.set("name", selected['name']);
+
+                first = false;
+            } else {
+                selected['device_type'] = params.get('device_type');
+                selected['name'] = params.get('name');
+            }
             params.set("info_type", "temperature");
 
             const res = await fetch(url_filters + "?" + params.toString());
@@ -86,6 +97,13 @@
                 `;
             }
         }
+
+        // quando mudar device_type → reseta name
+        document.querySelector("select[name='device_type']")
+            .addEventListener("change", () => {
+                document.querySelector("select[name='name']").value = "";
+                loadFilters();
+            });
 
         // inicial
         loadFilters();
