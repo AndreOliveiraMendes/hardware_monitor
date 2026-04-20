@@ -170,7 +170,7 @@ def get_daily_temperature_picks(device_type=None, name=None, page=0):
         query += " AND name = ?"
         params.append(name)
 
-    query += " GROUP BY day, device_type, name ORDER BY day"
+    query += " GROUP BY day, device_type, name ORDER BY day DESC"
     
     query += " LIMIT 20"
     
