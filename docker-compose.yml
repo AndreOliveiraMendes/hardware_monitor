@@ -2,17 +2,28 @@ services:
   hardware_monitor:
     build: .
     container_name: hardware_monitor
+
     environment:
       TZ: America/Sao_Paulo
+
+      # gunicorn config
+      GUNICORN_WORKERS: 2
+      GUNICORN_BIND: 0.0.0.0:5000
+      GUNICORN_APP: wsgi:app
+      GUNICORN_TIMEOUT: 30
+      GUNICORN_LOG_LEVEL: info
+      GUNICORN_RELOAD: "true"   # dev
+
     env_file:
       - .env
+
     volumes:
-#      - ./data:/app/data
       - .:/app
+
     networks:
       - shared_net
+
     restart: unless-stopped
-    command: ["gunicorn", "--reload", "-w", "4", "-b", "0.0.0.0:5000", "wsgi:app"]
 
 networks:
   shared_net:
