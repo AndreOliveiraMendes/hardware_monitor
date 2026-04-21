@@ -33,10 +33,13 @@
                 Nenhum dado encontrado
             {% endif %}
         </div>
+        <div class="mb-4">
+            <canvas id="tempChart"></canvas>
+        </div>
         <ul class="list-group list-group-flush">
             {% for day, dtype, name, min_temp, max_temp, avg in data %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span class="fw-semibold">[{{ loop.index + 20*request.args.get('page', 0)|int }}] {{ day }} | {{ dtype }} | {{ name }}</span>
+                    <span class="fw-semibold">[{{ loop.index + 20*request.args.get('page', 0) |int }}] {{ day }} | {{ dtype }} | {{ name }}</span>
                     <span>
                         <span class="text-primary fw-bold">min: {{ min_temp }}°C</span>
                         |
@@ -107,5 +110,96 @@
 
         // inicial
         loadFilters();
+    </script>
+    <script>
+        const rawData = {{ data|tojson }};
+
+        // 1. coletar todos os dias únicos
+        const daysSet = new Set();
+        for (const row of rawData) {
+            daysSet.add(row[0]);
+        }
+
+        const labels = Array.from(daysSet).sort(); // ordena
+
+        // 2. agrupar dados
+        const grouped = {};
+
+        for (const row of rawData) {
+            const [day, dtype, name, min, max, avg] = row;
+            const key = `${dtype}-${name}`;
+
+            if (!grouped[key]) {
+                grouped[key] = {};
+            }
+
+            grouped[key][day] = { min, max, avg };
+        }
+
+        // 3. montar datasets alinhados
+        const datasets = [];
+
+        for (const key in grouped) {
+            const g = grouped[key];
+
+            const minData = [];
+            const maxData = [];
+            const avgData = [];
+
+            for (const day of labels) {
+                if (g[day]) {
+                    minData.push(g[day].min);
+                    maxData.push(g[day].max);
+                    avgData.push(g[day].avg);
+                } else {
+                    minData.push(null);
+                    maxData.push(null);
+                    avgData.push(null);
+                }
+            }
+
+            datasets.push({
+                label: `${key} min`,
+                data: minData,
+                borderWidth: 1,
+                borderDash: [5, 5],
+                tension: 0.3,
+                hidden: true
+            });
+
+            datasets.push({
+                label: `${key} avg`,
+                data: avgData,
+                borderWidth: 2,
+                tension: 0.3
+            });
+
+            datasets.push({
+                label: `${key} max`,
+                data: maxData,
+                borderWidth: 1,
+                borderDash: [5, 5],
+                tension: 0.3,
+                hidden: true
+            });
+        }
+
+        // 4. criar gráfico
+        const ctx = document.getElementById('tempChart');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        });
     </script>
 {% endblock script %}
