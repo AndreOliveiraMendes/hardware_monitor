@@ -11,8 +11,13 @@
         </ul>
     </div>
     <h2 class="mb-3">Batteria</h2>
-    <div class="card shadow-sm p-3">
+    <div class="card shadow-sm p-3 mb-4">
         <ul id="battery" class="list-group list-group-flush">
+        </ul>
+    </div>
+    <h2 class="mb-3">Rede</h2>
+    <div class="card shadow-sm p-3">
+        <ul id="network-list" class="list-group list-group-flush">
         </ul>
     </div>
 {% endblock content %}
@@ -26,6 +31,7 @@
             const cpuList = document.getElementById("cpu-list");
             const diskList = document.getElementById("disk-list");
             const battery = document.getElementById("battery");
+            const networkList = document.getElementById("network-list");
 
             cpuList.innerHTML = "";
             diskList.innerHTML = "";
@@ -72,6 +78,18 @@
                     <li class="list-group-item d-flex justify-content-between">
                         <span>Bateria</span>
                         <span class="fw-bold">${info.value ?? "?"}% at ${info.time ?? "-"}</span>
+                    </li>
+                `;
+            }
+
+            // rede
+            for (const ip in data.network) {
+                const n = data.network[ip];
+
+                networkList.innerHTML += `
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>${n.name} (${ip})</span>
+                        <span class="fw-bold">${n.tailscale} / local: ${n.local}</span>
                     </li>
                 `;
             }
