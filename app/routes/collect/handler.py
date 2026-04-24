@@ -4,7 +4,12 @@ from flask import current_app
 
 def update_score(host_ip, device_type, name, temp):
     rows = get_heat_score(host_ip, device_type, name)
-    score, level = rows[0]
+    if len(rows) > 1:
+        score, level = 0, "imve"
+    elif len(rows) == 0:
+        score, level = 0, "???"
+    else:
+        score, level = rows[0]
     if temp < 70:
         score = max(0, score - 2)
     elif temp < 75:
