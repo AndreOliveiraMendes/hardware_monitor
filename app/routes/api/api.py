@@ -169,6 +169,6 @@ def get_hscore():
     
     return jsonify(get_heat_score(host_ip, device_type, name))
 
-@bp.route("/heat_score")
+@bp.route("/all_heat_score")
 def get_ahscore():
     return jsonify(get_all_heat_scores())

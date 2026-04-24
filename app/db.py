@@ -37,7 +37,7 @@ def get_all_heat_scores():
     with get_conn() as conn:
         cur = conn.cursor()
         cur.execute("""
-            SELECT heat_score, level
+            SELECT host_ip, device_type, name, heat_score, level, datetime(last_update, 'localtime') as timestamp
             FROM state
         """)
         return cur.fetchall()
