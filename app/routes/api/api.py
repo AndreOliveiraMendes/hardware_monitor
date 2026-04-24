@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, render_template, request, url_for
 
-from app.db import get_filters, get_latest_metrics, get_metrics
+from app.db import get_filters, get_heat_score, get_latest_metrics, get_metrics
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -76,6 +76,31 @@ def menu():
                         "example": "CPU"
                     }
                 ]
+            },
+            {
+                "path": url_for('api.get_hscore'),
+                "method": "GET",
+                "description": "get the heat score",
+                "params":[
+                    {
+                        "name": "host_ip",
+                        "type": "string",
+                        "required": False,
+                        "example": "CPU"
+                    },
+                    {
+                        "name": "device_type",
+                        "type": "string",
+                        "required": False,
+                        "example": "CPU"
+                    },
+                    {
+                        "name": "name",
+                        "type": "string",
+                        "required": False,
+                        "example": "Core 0"
+                    }
+                ]
             }
         ]
     }
@@ -127,3 +152,11 @@ def filters():
         "device_types": device_types,
         "names": names
     })
+
+@bp.route("/heat_score")
+def get_hscore():
+    host_ip = request.args.get("host_ip")
+    device_type = request.args.get("device_type")
+    name = request.args.get("name")
+    
+    return jsonify(get_heat_score(host_ip, device_type, name))
