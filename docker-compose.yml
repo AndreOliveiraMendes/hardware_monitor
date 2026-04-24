@@ -7,7 +7,7 @@ services:
       TZ: America/Sao_Paulo
 
       # gunicorn config
-      GUNICORN_WORKERS: 2
+      GUNICORN_WORKERS: 4
       GUNICORN_BIND: 0.0.0.0:5000
       GUNICORN_APP: wsgi:app
       GUNICORN_TIMEOUT: 30
