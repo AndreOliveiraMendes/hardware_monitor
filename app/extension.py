@@ -29,6 +29,19 @@ def init_db():
             meta TEXT
         )
     """)
+    
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS state (
+            host_ip TEXT NOT NULL,
+            device_type TEXT NOT NULL,
+            name TEXT NOT NULL,
+            heat_score REAL DEFAULT 0,
+            level TEXT DEFAULT 'ok',
+            last_update DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+            PRIMARY KEY (host_ip, device_type, name)
+        )
+    """)
 
     conn.commit()
     conn.close()
