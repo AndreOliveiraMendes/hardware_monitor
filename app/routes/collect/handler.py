@@ -1,4 +1,5 @@
 from app.db import get_heat_score, insert_metric, update_heat_score
+from flask import current_app
 
 
 def update_score(host_ip, device_type, name, temp):
@@ -34,6 +35,7 @@ def collect_data(item):
     try:
         insert_metric(**item)
     except Exception as e:
+        current_app.logger.warning(f"erro ao atualizar metrica:{e}")
         return 500, str(e)
 
     # 2. Update de estado (não crítico)
@@ -44,6 +46,6 @@ def collect_data(item):
             update_heat_score(host_ip, device_type, name, score, level)
     except Exception as e:
         # loga, mas NÃO quebra ingest
-        print(f"[WARN] heat_score failed: {e}")
+        current_app.logger.warning(f"erro ao atualizar o heat score:{e}")
 
     return 200, "Data inserted successfully"

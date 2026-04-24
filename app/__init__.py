@@ -18,5 +18,7 @@ def create_app():
         templater_helpers(app)
         
         register_blueprints(app)
+        
+    app.logger.info("started")
 
     return app
