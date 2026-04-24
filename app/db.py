@@ -38,7 +38,6 @@ def get_latest_metrics():
     conn.close()
 
     data = {"cpu": {}, "disk": {}, "battery": None, "network": {}}
-    print(rows)
 
     for info_type, time, device_type, name, value, meta in rows:
         if info_type == "temperature":
@@ -50,7 +49,7 @@ def get_latest_metrics():
             data["battery"] = {"value":value, "time":time}
         elif info_type == "network":
             meta_dict = json.loads(meta)
-            data["network"][value] = {"name":name, "tailscale":meta_dict["tailscale"], "local":meta_dict["local"]}
+            data["network"][value] = {"name":name, "tailscale":meta_dict["tailscale"], "local":meta_dict["local"], "time":time}
 
     return data
 

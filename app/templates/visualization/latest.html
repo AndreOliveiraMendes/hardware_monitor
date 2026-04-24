@@ -83,13 +83,14 @@
             }
 
             // rede
+            networkList.innerHTML = '';
             for (const ip in data.network) {
                 const n = data.network[ip];
 
                 networkList.innerHTML += `
                     <li class="list-group-item d-flex justify-content-between">
                         <span>${n.name} (${ip})</span>
-                        <span class="fw-bold">${n.tailscale} / local: ${n.local}</span>
+                        <span class="fw-bold">${n.tailscale} / local: ${n.local} at ${n.time ?? "-"}</span>
                     </li>
                 `;
             }
