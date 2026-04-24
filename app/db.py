@@ -19,6 +19,34 @@ def insert_metric(**kwargs):
         cur = conn.cursor()
         cur.execute(query, tuple(values))
         conn.commit()
+        
+def get_heat_score(host_ip, device_type, name):
+    conn = get_conn()
+    cur = conn.cursor()
+    
+    cur.execute("""
+        SELECT heat_score, level
+        FROM state
+        WHERE host_ip = ? AND device_type = ? AND name = ?
+    """, [host_ip, device_type, name])
+    rows = cur.fetchall()
+    conn.close()
+    return rows
+    
+        
+def update_heat_score(host_ip, device_type, name, score, level):
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO state (host_ip, device_type, name, heat_score, level)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(host_ip, device_type, name)
+            DO UPDATE SET
+                heat_score = excluded.heat_score,
+                level = excluded.level,
+                last_update = CURRENT_TIMESTAMP
+        """, (host_ip, device_type, name, score, level))
+        conn.commit()
     
 def get_latest_metrics():
     conn = get_conn()
@@ -146,6 +174,8 @@ def get_filters(info_type, device_type):
         cur.execute("SELECT DISTINCT name FROM metrics WHERE name IS NOT NULL")
         names = [r[0] for r in cur.fetchall()]
         
+    conn.close()
+        
     return info_types, device_types, names
 
 def get_daily_temperature_picks(device_type=None, name=None, page=0):
@@ -183,5 +213,6 @@ def get_daily_temperature_picks(device_type=None, name=None, page=0):
         params.append(20*page)
 
     cur.execute(query, params)
-
-    return cur.fetchall()
+    rows = cur.fetchall()
+    conn.close()
+    return rows
