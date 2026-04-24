@@ -6,6 +6,7 @@ from app.helpers.helpers import templater_helpers
 from app.routes import register_blueprints
 from config_loging import setup_logging
 
+
 def create_app():
     app = Flask(__name__)
     app.wsgi_app = ProxyFix(app.wsgi_app, x_prefix=1)

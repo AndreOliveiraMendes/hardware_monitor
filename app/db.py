@@ -32,7 +32,15 @@ def get_heat_score(host_ip, device_type, name):
     rows = cur.fetchall()
     conn.close()
     return rows
-    
+
+def get_all_heat_scores():
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT heat_score, level
+            FROM state
+        """)
+        return cur.fetchall()
         
 def update_heat_score(host_ip, device_type, name, score, level):
     with get_conn() as conn:

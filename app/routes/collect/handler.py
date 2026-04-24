@@ -1,5 +1,6 @@
-from app.db import get_heat_score, insert_metric, update_heat_score
 from flask import current_app
+
+from app.db import get_heat_score, insert_metric, update_heat_score
 
 
 def update_score(host_ip, device_type, name, temp):
