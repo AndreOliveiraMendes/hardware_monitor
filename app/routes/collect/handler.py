@@ -2,7 +2,8 @@ from app.db import get_heat_score, insert_metric, update_heat_score
 
 
 def update_score(host_ip, device_type, name, temp):
-    score, level = get_heat_score(host_ip, device_type, name)
+    rows = get_heat_score(host_ip, device_type, name)
+    score, level = rows[0]
     if temp < 70:
         score = max(0, score - 2)
     elif temp < 75:
