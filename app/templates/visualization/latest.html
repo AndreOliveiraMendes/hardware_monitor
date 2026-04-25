@@ -23,6 +23,18 @@
 {% endblock content %}
 {% block script %}
     <script>
+        function getTailscaleIcon(status) {
+            if (status.includes("direct")) return "fa-circle-nodes";
+            if (status.includes("relay")) return "fa-network-wired";
+            return "fa-circle-question";
+        }
+
+        function getLocalIcon(status) {
+            if (status === "up") return "fa-circle-check";
+            if (status === "down") return "fa-circle-xmark";
+            return "fa-circle-question";
+        }
+
         async function loadData() {
             const url = "{{ url_for('api.last_metrics') }}";
             const res = await fetch(url);
@@ -84,13 +96,22 @@
 
             // rede
             networkList.innerHTML = '';
+
             for (const ip in data.network) {
                 const n = data.network[ip];
 
                 networkList.innerHTML += `
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>${n.name} (${ip})</span>
-                        <span class="fw-bold">${n.tailscale} / local: ${n.local} at ${n.time ?? "-"}</span>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="fa-solid ${getTailscaleIcon(n.tailscale)} me-2"></i>
+                            ${n.name} (${ip})
+                        </span>
+
+                        <span class="fw-bold">
+                            <i class="fa-solid ${getLocalIcon(n.local)} me-1"></i>
+                            ${n.tailscale} / local: ${n.local}
+                            <small class="text-muted ms-2">${n.time ?? "-"}</small>
+                        </span>
                     </li>
                 `;
             }
