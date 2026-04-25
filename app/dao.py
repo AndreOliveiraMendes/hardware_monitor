@@ -231,10 +231,12 @@ def get_temperature_series(device_type=None, name=None, start=None, end=None, pa
         params.append(name)
 
     if start:
+        start = datetime.fromisoformat(start)
         query_sql += " AND datetime(timestamp, 'localtime') >= ?"
         params.append(start)
 
     if end:
+        end = datetime.fromisoformat(end)
         query_sql += " AND datetime(timestamp, 'localtime') <= ?"
         params.append(end)
 
