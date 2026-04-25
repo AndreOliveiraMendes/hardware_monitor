@@ -152,7 +152,7 @@
                 selected['device_type'] = params.get('device_type');
                 selected['name'] = params.get('name');
             }
-            console.log(params, params['device_type']);
+
             const res = await fetch(url_filters + "?" + params.toString());
             const data = await res.json();
 

@@ -63,7 +63,7 @@
                             <!-- STATUS -->
                             <div id="status-{{ loop.index0 }}" class="small mb-2 d-none"></div>
                             <!-- RESULTADO -->
-                            <pre class="bg-dark text-light p-3 rounded small d-none"
+                            <pre class="line-numbers bg-dark text-light p-3 rounded small d-none"
                                  id="response-{{ loop.index0 }}"></pre>
                         </div>
                     </div>
@@ -140,10 +140,21 @@
                     Status: <b>${res.status}</b> • ${time} ms
                 `;
 
-                // BODY
-                pre.textContent = typeof data === "string"
-                    ? data
-                    : JSON.stringify(data, null, 2);
+            const formatted =
+                typeof data === "object"
+                    ? JSON.stringify(data, null, 2)
+                    : String(data);
+
+            pre.className = "line-numbers bg-dark text-light rounded small";
+
+            // importante: estrutura correta
+            pre.innerHTML = typeof data === "object"
+                ? `<code class="language-json">${formatted}</code>`
+                : `<code class="language-markup">${formatted}</code>`
+
+            setTimeout(() => {
+                Prism.highlightElement(pre.querySelector("code"));
+            }, 0);
 
             } catch (err) {
                 status.className = "small mb-2 text-danger";
