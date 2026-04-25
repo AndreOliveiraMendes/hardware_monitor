@@ -88,19 +88,19 @@ def menu():
                     {
                         "name": "host_ip",
                         "type": "string",
-                        "required": False,
+                        "required": True,
                         "example": "192.168.5.50"
                     },
                     {
                         "name": "device_type",
                         "type": "string",
-                        "required": False,
+                        "required": True,
                         "example": "CPU"
                     },
                     {
                         "name": "name",
                         "type": "string",
-                        "required": False,
+                        "required": True,
                         "example": "Core 0"
                     }
                 ]
@@ -206,6 +206,9 @@ def get_hscore():
     host_ip = request.args.get("host_ip")
     device_type = request.args.get("device_type")
     name = request.args.get("name")
+    
+    if not host_ip or device_type or name:
+        return jsonify({"error": "not enought information"}), 500
     
     return jsonify(get_heat_score(host_ip, device_type, name))
 

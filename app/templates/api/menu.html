@@ -3,44 +3,78 @@
     <div class="container py-5">
         <!-- Header -->
         <div class="text-center mb-5">
-            <h1 class="display-6 fw-semibold">{{ info.name }}</h1>
+            <h1 class="display-6 fw-semibold">
+                <i class="fa-solid fa-server me-2 text-primary"></i>
+                {{ info.name }}
+            </h1>
             <p class="text-muted mb-1">Version {{ info.version }}</p>
             <p class="lead text-muted">Endpoints disponíveis da API para consulta e integração.</p>
         </div>
         <!-- Endpoints -->
         <div class="row justify-content-center">
-            <div class="col-lg-8">
+            <div class="col-lg-9">
                 {% for ep in info.endpoints %}
+                    {% set icon = "fa-temperature-high" if "temperature" in ep.path else
+                                            "fa-chart-line" if "metrics" in ep.path else
+                                            "fa-filter" if "filters" in ep.path else
+                                            "fa-fire" if "heat" in ep.path else
+                                            "fa-circle-info" %}
                     <div class="card mb-3 shadow-sm border-0">
                         <div class="card-body">
+                            <!-- topo -->
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge {% if ep.method == 'GET' %}bg-success {% elif ep.method == 'POST' %}bg-warning text-dark {% elif ep.method == 'DELETE' %}bg-danger {% else %}bg-secondary {% endif %}">
-                                    {{ ep.method }}
-                                </span>
-                                <code class="text-dark">{{ ep.path }}</code>
+                                <div>
+                                    <span class="badge {% if ep.method == 'GET' %}bg-success {% elif ep.method == 'POST' %}bg-warning text-dark {% elif ep.method == 'DELETE' %}bg-danger {% else %}bg-secondary{% endif %}">
+                                        {{ ep.method }}
+                                    </span>
+                                    <i class="fa-solid {{ icon }} ms-2 text-muted"></i>
+                                </div>
+                                <code class="text-dark small">{{ ep.path }}</code>
                             </div>
+                            <!-- descrição -->
                             <p class="text-muted mb-3">{{ ep.description }}</p>
+                            <!-- parâmetros -->
                             {% if ep.params %}
                                 <div class="mb-3">
-                                    <small class="text-muted">Parâmetros:</small>
-                                    <ul class="list-group list-group-flush mt-1">
+                                    <small class="text-muted">
+                                        <i class="fa-solid fa-sliders me-1"></i>
+                                        Parâmetros
+                                    </small>
+                                    <ul class="list-group list-group-flush mt-2">
                                         {% for p in ep.params %}
-                                            <li class="list-group-item px-0 py-1 border-0">
-                                                <code>{{ p.name }}</code>
-                                                <span class="text-muted">({{ p.type }})</span>
-                                                {% if p.required %}
-                                                    <span class="badge bg-danger ms-1">required</span>
-                                                {% else %}
-                                                    <span class="badge bg-secondary ms-1">optional</span>
-                                                {% endif %}
-                                                <br>
-                                                <small class="text-muted">ex: {{ p.example }}</small>
+                                            <li class="list-group-item px-0 py-2 border-0">
+                                                <div class="d-flex justify-content-between">
+                                                    <div>
+                                                        <i class="fa-solid fa-circle-dot text-secondary me-1"></i>
+                                                        <code>{{ p.name }}</code>
+                                                        <span class="text-muted">({{ p.type }})</span>
+                                                        {% if p.required %}
+                                                            <span class="badge bg-danger ms-1">required</span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary ms-1">optional</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">
+                                                    <i class="fa-solid fa-code me-1"></i>
+                                                    ex: {{ p.example }}
+                                                </small>
                                             </li>
                                         {% endfor %}
                                     </ul>
                                 </div>
                             {% endif %}
-                            <a href="{{ ep.path }}" class="btn btn-sm btn-outline-primary">Testar endpoint</a>
+                            <!-- ações -->
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{ ep.path }}" target="_blank" class="btn btn-sm btn-primary">
+                                    <i class="fa-solid fa-play me-1"></i>
+                                    Testar
+                                </a>
+                                <button class="btn btn-sm btn-outline-secondary"
+                                        onclick="navigator.clipboard.writeText('{{ ep.path }}')">
+                                    <i class="fa-solid fa-copy"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 {% endfor %}
