@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request
 
-from app.db import get_daily_temperature_picks
+from app.dao import get_daily_temperature_picks
 
 bp = Blueprint('visualization', __name__, url_prefix='/visualization')
 
