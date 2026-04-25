@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import Blueprint, jsonify, render_template, request, url_for
+from flask import Blueprint, current_app, jsonify, render_template, request, url_for
 
 from app.dao import (get_all_heat_scores, get_filters, get_heat_score,
                      get_latest_metrics, get_metrics, get_temperature_series)
@@ -208,6 +208,7 @@ def get_hscore():
     name = request.args.get("name")
     
     if not host_ip or device_type or name:
+        current_app.logger.error(f"not enought info: ({host_ip}, {device_type}, {name})")
         return jsonify({"error": "not enought information"}), 500
     
     return jsonify(get_heat_score(host_ip, device_type, name))
