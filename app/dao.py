@@ -196,11 +196,11 @@ def get_daily_temperature_picks(device_type=None, name=None, page=0):
         params.append(name)
 
     query += " GROUP BY day, device_type, name ORDER BY day DESC"
-    query += " LIMIT 20"
+    query += " LIMIT 100"
 
     if page:
         query += " OFFSET ?"
-        params.append(20 * page)
+        params.append(100 * page)
 
     with get_conn() as conn:
         cur = conn.cursor()
