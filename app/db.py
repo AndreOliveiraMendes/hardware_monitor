@@ -21,23 +21,21 @@ def insert_metric(**kwargs):
         conn.commit()
         
 def get_heat_score(host_ip, device_type, name):
-    conn = get_conn()
-    cur = conn.cursor()
-    
-    cur.execute("""
-        SELECT heat_score, level
-        FROM state
-        WHERE host_ip = ? AND device_type = ? AND name = ?
-    """, [host_ip, device_type, name])
-    rows = cur.fetchall()
-    conn.close()
-    return rows
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT heat_score, level
+            FROM state
+            WHERE host_ip = ? AND device_type = ? AND name = ?
+        """, (host_ip, device_type, name))
+        return cur.fetchall()
 
 def get_all_heat_scores():
     with get_conn() as conn:
         cur = conn.cursor()
         cur.execute("""
-            SELECT host_ip, device_type, name, heat_score, level, datetime(last_update, 'localtime') as timestamp
+            SELECT host_ip, device_type, name, heat_score, level,
+                   datetime(last_update, 'localtime') as timestamp
             FROM state
         """)
         return cur.fetchall()
@@ -57,21 +55,21 @@ def update_heat_score(host_ip, device_type, name, score, level):
         conn.commit()
     
 def get_latest_metrics():
-    conn = get_conn()
-    cur = conn.cursor()
+    with get_conn() as conn:
+        cur = conn.cursor()
 
-    cur.execute("""
-        SELECT type, datetime(timestamp, 'localtime') as timestamp, device_type, name, value, meta
-        FROM metrics
-        WHERE id IN (
-            SELECT MAX(id)
+        cur.execute("""
+            SELECT type, datetime(timestamp, 'localtime') as timestamp,
+                   device_type, name, value, meta
             FROM metrics
-            GROUP BY device_type, name
-        )
-    """)
+            WHERE id IN (
+                SELECT MAX(id)
+                FROM metrics
+                GROUP BY device_type, name
+            )
+        """)
 
-    rows = cur.fetchall()
-    conn.close()
+        rows = cur.fetchall()
 
     data = {"cpu": {}, "disk": {}, "battery": None, "network": {}}
 
@@ -89,10 +87,7 @@ def get_latest_metrics():
 
     return data
 
-def get_metrics(start, end, tipo_info, tipo_temp, name, page = 0):
-    conn = get_conn()
-    cur = conn.cursor()
-
+def get_metrics(start, end, tipo_info, tipo_temp, name, page=0):
     query = """
         SELECT datetime(timestamp, 'localtime'), type, device_type, name, value
         FROM metrics
@@ -130,66 +125,58 @@ def get_metrics(start, end, tipo_info, tipo_temp, name, page = 0):
 
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
-    
+
     query += " ORDER BY timestamp DESC LIMIT 100"
-    
+
     if page:
         query += " OFFSET ?"
-        params.append(100*page)
+        params.append(100 * page)
 
-    cur.execute(query, params)
-    rows = cur.fetchall()
-    conn.close()
-    return rows
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(query, params)
+        return cur.fetchall()
 
 def get_filters(info_type, device_type):
-    conn = get_conn()
-    cur = conn.cursor()
+    with get_conn() as conn:
+        cur = conn.cursor()
 
-    # 1. sempre retorna info_types
-    cur.execute("SELECT DISTINCT type FROM metrics")
-    info_types = [r[0] for r in cur.fetchall()]
+        cur.execute("SELECT DISTINCT type FROM metrics")
+        info_types = [r[0] for r in cur.fetchall()]
 
-    # 2. device_types só se temperature
-    device_types = []
-    if info_type == "temperature" or not info_type:
-        cur.execute("""
-            SELECT DISTINCT device_type
-            FROM metrics
-            WHERE type = 'temperature'
-        """)
-        device_types = [r[0] for r in cur.fetchall()]
-
-    # 3. names dependem de device_type + info_type
-    names = []
-
-    if info_type == "temperature":
-        if device_type:
+        device_types = []
+        if info_type == "temperature" or not info_type:
             cur.execute("""
-                SELECT DISTINCT name
-                FROM metrics
-                WHERE type = 'temperature'
-                AND device_type = ?
-            """, (device_type,))
-        else:
-            cur.execute("""
-                SELECT DISTINCT name
+                SELECT DISTINCT device_type
                 FROM metrics
                 WHERE type = 'temperature'
             """)
-        names = [r[0] for r in cur.fetchall()]
-    else:
-        cur.execute("SELECT DISTINCT name FROM metrics WHERE name IS NOT NULL")
-        names = [r[0] for r in cur.fetchall()]
-        
-    conn.close()
-        
-    return info_types, device_types, names
+            device_types = [r[0] for r in cur.fetchall()]
+
+        names = []
+
+        if info_type == "temperature":
+            if device_type:
+                cur.execute("""
+                    SELECT DISTINCT name
+                    FROM metrics
+                    WHERE type = 'temperature'
+                    AND device_type = ?
+                """, (device_type,))
+            else:
+                cur.execute("""
+                    SELECT DISTINCT name
+                    FROM metrics
+                    WHERE type = 'temperature'
+                """)
+            names = [r[0] for r in cur.fetchall()]
+        else:
+            cur.execute("SELECT DISTINCT name FROM metrics WHERE name IS NOT NULL")
+            names = [r[0] for r in cur.fetchall()]
+
+        return info_types, device_types, names
 
 def get_daily_temperature_picks(device_type=None, name=None, page=0):
-    conn = get_conn()
-    cur = conn.cursor()
-
     query = """
         SELECT
             DATE(datetime(timestamp, 'localtime')) as day,
@@ -213,14 +200,13 @@ def get_daily_temperature_picks(device_type=None, name=None, page=0):
         params.append(name)
 
     query += " GROUP BY day, device_type, name ORDER BY day DESC"
-    
     query += " LIMIT 20"
-    
+
     if page:
         query += " OFFSET ?"
-        params.append(20*page)
+        params.append(20 * page)
 
-    cur.execute(query, params)
-    rows = cur.fetchall()
-    conn.close()
-    return rows
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(query, params)
+        return cur.fetchall()
