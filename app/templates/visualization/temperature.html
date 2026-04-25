@@ -1,19 +1,46 @@
 {% extends "base.html" %}
 {% block content %}
-    <h2 class="mb-4">Temperatura ao longo do tempo</h2>
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-auto">
+            <label>Início</label>
+            <input type="datetime-local"
+                   name="start"
+                   class="form-control"
+                   value="{{ request.args.get('start') }}">
+        </div>
+        <div class="col-auto">
+            <label>Fim</label>
+            <input type="datetime-local"
+                   name="end"
+                   class="form-control"
+                   value="{{ request.args.get('end') }}">
+        </div>
+        <div class="col-auto">
+            <label>Tipo</label>
+            <select name="device_type" class="form-control"></select>
+        </div>
+        <div class="col-auto">
+            <label>Nome</label>
+            <select name="name" class="form-control"></select>
+        </div>
+        <div class="col-auto align-self-end">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+    </form>
     <div class="card shadow-sm p-3">
+        <button class="btn btn-sm btn-secondary mb-2" onclick="chart.resetZoom()">Reset Zoom</button>
         <canvas id="chart"></canvas>
     </div>
 {% endblock content %}
 {% block script %}
     <script>
+        const form = document.querySelector("form");
         const url = "{{ url_for('api.temperature_series') }}";
-        let chart;
+        const url_filters = "{{ url_for('api.filters') }}";
 
-        function renderChart(ctx, config) {
-            if (chart) chart.destroy();
-            chart = new Chart(ctx, config);
-        }
+        let chart;
+        const selected = {{ selected|tojson }};
+        let first = true;
 
         function getColor(i) {
             const colors = [
@@ -29,28 +56,28 @@
             const res = await fetch(url + "?" + params.toString());
             const rawData = await res.json();
 
-            // 1. labels (timestamps únicos)
+            if (!rawData || rawData.length === 0) {
+                if (chart) chart.destroy();
+                return;
+            }
+
+            // labels
             const labels = [...new Set(rawData.map(d => d.timestamp))].sort();
 
-            // 2. agrupar por sensor
+            // agrupar
             const grouped = {};
-
             for (const d of rawData) {
                 const key = `${d.device_type}-${d.name}`;
-
                 if (!grouped[key]) grouped[key] = {};
-
                 grouped[key][d.timestamp] = d.value;
             }
 
-            // 3. montar datasets
+            // datasets
             const datasets = [];
-
             let i = 0;
 
             for (const key in grouped) {
                 const g = grouped[key];
-
                 const data = labels.map(t => g[t] ?? null);
 
                 datasets.push({
@@ -67,8 +94,9 @@
 
             const ctx = document.getElementById("chart").getContext("2d");
 
-            // 4. criar gráfico
-            new Chart(ctx, {
+            if (chart) chart.destroy();
+
+            chart = new Chart(ctx, {
                 type: "line",
                 data: {
                     labels: labels,
@@ -87,13 +115,14 @@
                                 unit: "minute"
                             }
                         }
-                    }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `${context.dataset.label}: ${context.raw}°C`;
+                    },
+                    plugins: {
+                        zoom: {
+                            pan: { enabled: true, mode: "x" },
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: "x"
                             }
                         }
                     }
@@ -101,6 +130,67 @@
             });
         }
 
+        async function loadFilters() {
+            const params = new URLSearchParams(new FormData(form));
+            params.set("info_type", "temperature");
+            if (first) {
+                if (selected['device_type'])
+                    params.set("device_type", selected['device_type']);
+                
+                if (selected['name'])
+                    params.set("name", selected['name']);
+
+                first = false;
+            } else {
+                selected['device_type'] = params.get('device_type');
+                selected['name'] = params.get('name');
+            }
+            console.log(params, params['device_type']);
+            const res = await fetch(url_filters + "?" + params.toString());
+            const data = await res.json();
+
+            fillSelect("device_type", data.device_types);
+            fillSelect("name", data.names);
+        }
+
+        function fillSelect(name, values) {
+            const select = document.querySelector(`select[name="${name}"]`);
+            if (!select) return;
+
+            //const current = new URLSearchParams(window.location.search).get(name);
+            const current = selected[name];  // 🔥 aqui
+
+            select.innerHTML = `<option value="">Todos</option>`;
+
+            for (const v of values) {
+                select.innerHTML += `
+                    <option value="${v}" ${v === current ? "selected" : ""}>
+                        ${v}
+                    </option>
+                `;
+            }
+        }
+
+        // dependência entre selects (igual metrics)
+        document.querySelector("select[name='device_type']")
+            .addEventListener("change", () => {
+                document.querySelector("select[name='name']").value = "";
+                loadFilters();
+            });
+
+        // submit sem reload
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const params = new URLSearchParams(new FormData(form));
+            history.pushState(null, "", "?" + params.toString());
+
+            loadChart();
+            loadFilters();
+        });
+
+        // init
+        loadFilters();
         loadChart();
 
         setInterval(loadChart, 60000);

@@ -112,6 +112,12 @@ def get_metrics(start, end, tipo_info, tipo_temp, name, page=0):
         if name:
             conditions.append("name = ?")
             params.append(name)
+    elif tipo_info == "network":
+        conditions.append("type = ?")
+        params.append(tipo_info)
+        if name:
+            conditions.append("name = ?")
+            params.append(name)
 
     if conditions:
         query_sql += " WHERE " + " AND ".join(conditions)
@@ -225,17 +231,13 @@ def get_temperature_series(device_type=None, name=None, start=None, end=None, pa
         params.append(name)
 
     if start:
-        query_sql += " AND timestamp >= ?"
+        query_sql += " AND datetime(timestamp, 'localtime') >= ?"
         params.append(start)
 
     if end:
-        query_sql += " AND timestamp <= ?"
+        query_sql += " AND datetime(timestamp, 'localtime') <= ?"
         params.append(end)
 
-    query_sql += " ORDER BY timestamp ASC LIMIT 500"
-
-    if page:
-        query_sql += " OFFSET ?"
-        params.append(page * 500)
+    query_sql += " ORDER BY timestamp"
 
     return query(query_sql, params)
