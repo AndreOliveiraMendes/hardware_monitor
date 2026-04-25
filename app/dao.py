@@ -79,7 +79,7 @@ def get_latest_metrics():
 
 def get_metrics(start, end, tipo_info, tipo_temp, name, page=0):
     query_sql = """
-        SELECT datetime(timestamp, 'localtime'), type, device_type, name, value
+        SELECT datetime(timestamp, 'localtime'), type, device_type, name, value, meta
         FROM metrics
     """
 

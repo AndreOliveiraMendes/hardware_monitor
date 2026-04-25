@@ -15,20 +15,18 @@
         {% endblock style %}
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <nav class="navbar navbar-expand navbar-dark bg-dark">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{{ url_for('default.index') }}">Hardware Monitor</a>
-                <div class="collapse navbar-collapse">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <div class="collapse navbar-collapse ">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         <li class="nav-item dropdown">
                             <!-- botão -->
-                            <a class="nav-link dropdown-toggle"
-                               href="#"
-                               role="button"
-                               data-bs-toggle="dropdown"
-                               aria-expanded="false">Dropdown</a>
+                            <a class="nav-link" href="#" data-bs-toggle="dropdown" title="Menu">
+                                <i class="fa-solid fa-bars fs-5"></i>
+                            </a>
                             <!-- parte colapsável -->
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
                                     <a class="dropdown-item" href="{{ url_for('default.index') }}">Home</a>
                                 </li>
@@ -37,6 +35,19 @@
                                 </li>
                                 <li>
                                     <a class="dropdown-item" href="{{ url_for('visualization.index') }}">Dashboard</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       target="_blank"
+                                       href="https://getbootstrap.com/docs/5.2/getting-started/introduction/">bootstrap 5.2.3</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       target="_blank"
+                                       href="https://fontawesome.com/icons">font awesome</a>
                                 </li>
                             </ul>
                         </li>

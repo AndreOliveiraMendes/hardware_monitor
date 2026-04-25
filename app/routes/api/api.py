@@ -144,6 +144,7 @@ def all_metrics():
             "device_type": row[2],
             "name": row[3],
             "value": row[4],
+            "meta": row[5]
         })
 
     return jsonify(data)

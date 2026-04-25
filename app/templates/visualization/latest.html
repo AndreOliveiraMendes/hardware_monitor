@@ -23,6 +23,14 @@
 {% endblock content %}
 {% block script %}
     <script>
+        function getBatteryIcon(value) {
+            if (value >= 80) return "fa-battery-full";
+            if (value >= 60) return "fa-battery-three-quarters";
+            if (value >= 40) return "fa-battery-half";
+            if (value >= 20) return "fa-battery-quarter";
+            return "fa-battery-empty";
+        }
+
         function getTailscaleIcon(status) {
             if (status.includes("direct")) return "fa-circle-nodes";
             if (status.includes("relay")) return "fa-network-wired";
@@ -57,7 +65,10 @@
 
                     cpuList.innerHTML += `
                         <li class="list-group-item d-flex justify-content-between">
-                            <span>${core}</span>
+                            <span>
+                                <i class="fa-solid fa-microchip me-2"></i>
+                                ${core}
+                            </span>
                             <span class="fw-bold">${info.value}°C at ${info.time}</span>
                         </li>
                     `;
@@ -73,7 +84,10 @@
 
                     diskList.innerHTML += `
                         <li class="list-group-item d-flex justify-content-between">
-                            <span>${disk}</span>
+                            <span>
+                                <i class="fa-solid fa-hard-drive me-2"></i>
+                                ${disk}
+                            </span>
                             <span class="fw-bold">${info.value}°C at ${info.time}</span>
                         </li>
                     `;
@@ -88,7 +102,10 @@
 
                 battery.innerHTML = `
                     <li class="list-group-item d-flex justify-content-between">
-                        <span>Bateria</span>
+                        <span>
+                            <i class="fa-solid ${getBatteryIcon(info.value)} me-2"></i>
+                            Bateria
+                        </span>
                         <span class="fw-bold">${info.value ?? "?"}% at ${info.time ?? "-"}</span>
                     </li>
                 `;

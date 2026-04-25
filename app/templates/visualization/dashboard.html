@@ -80,6 +80,37 @@
             return "";
         }
 
+        function getInfoIcon(type) {
+            if (type === "temperature") return "fa-temperature-high";
+            if (type === "battery") return "fa-battery-half";
+            if (type === "network") return "fa-network-wired";
+            return "fa-circle-info";
+        }
+
+        function getInfoColor(type) {
+            if (type === "temperature") return "text-danger";
+            if (type === "battery") return "text-success";
+            if (type === "network") return "text-primary";
+            return "text-secondary";
+        }
+
+        function formatMetaTooltip(type, meta) {
+            if (!meta) return "";
+
+            if (type === "battery") {
+                return `Status: ${meta.status ?? "?"}\n` +
+                    `AC: ${meta.ac_online ? "plugado" : "bateria"}\n` +
+                    `Capacidade: ${meta.capacity ?? "?"}%`;
+            }
+
+            if (type === "network") {
+                return `Local: ${meta.local ?? "?"}\n` +
+                    `Tailscale: ${meta.tailscale ?? "?"}`;
+            }
+
+            return JSON.stringify(meta, null, 1);
+        }
+
         async function loadData() {
             const params = new URLSearchParams(window.location.search);
 
@@ -94,35 +125,53 @@
             const infoText = formatInfo(params);
             if (infoText) {
                 info.innerHTML = `<div class="alert alert-info">${infoText}</div>`;
+            } else {
+                info.innerHTML = "";
             }
 
-            if (data.length === 0) {
+            if (!data || data.length === 0) {
                 list.innerHTML = '<li class="list-group-item">No data</li>';
                 return;
             }
 
-            let page = params.get('page')
-            let index = 100*page + 1;
+            const page = parseInt(params.get('page') || "0", 10);
+            let index = page * 100 + 1;
 
             for (const item of data) {
-                const {timestamp, infotype, device_type, name, value } = item;
-                
+                const { timestamp, infotype, device_type, name, value } = item;
 
-                let unit = infotype === "temperature" ? "°C" :
-                        infotype === "battery" ? "%" : "";
+                let unit = infotype === "temperature" ? "°C"
+                        : infotype === "battery" ? "%"
+                        : "";
 
-                let label = `[${index}] ${timestamp} - ${infotype}`;
+                let label = `[${index}] ${timestamp}`;
                 if (device_type) label += ` - ${device_type}`;
                 if (name) label += ` - ${name}`;
 
+                let meta = {};
+                try {
+                    meta = item.meta ? JSON.parse(item.meta) : {};
+                } catch (e) {
+                    meta = {};
+                }
+
+                const tooltip = formatMetaTooltip(infotype, meta)
+                    .replace(/"/g, '&quot;'); // evita quebrar HTML
+
                 list.innerHTML += `
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>${label}</span>
-                        <span class="fw-bold">${value ?? "?"}${unit}</span>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span title="${tooltip}">
+                            <i class="fa-solid ${getInfoIcon(infotype)} ${getInfoColor(infotype)} me-2"></i>
+                            ${label}
+                        </span>
+
+                        <span class="fw-bold">
+                            ${value ?? "?"}${unit}
+                        </span>
                     </li>
                 `;
 
-                index += 1;
+                index++;
             }
         }
 
