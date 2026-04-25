@@ -23,6 +23,13 @@
             <label>Nome</label>
             <select name="name" class="form-control"></select>
         </div>
+        <div class="col-auto">
+            <label>Page</label>
+            <input type="number"
+                   name="page"
+                   value="{{ request.args.get('page', 0) }}"
+                   class="form-control">
+        </div>
         <div class="col-auto align-self-end">
             <button type="submit" class="btn btn-primary">Filtrar</button>
         </div>

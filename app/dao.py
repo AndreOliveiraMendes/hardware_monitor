@@ -240,6 +240,10 @@ def get_temperature_series(device_type=None, name=None, start=None, end=None, pa
         query_sql += " AND datetime(timestamp, 'localtime') <= ?"
         params.append(end)
 
-    query_sql += " ORDER BY timestamp"
+    query_sql += " ORDER BY timestamp LIMIT 500"
+    
+    if page:
+        query_sql += " OFFSET ?"
+        params.append(500 * page)
 
     return query(query_sql, params)
