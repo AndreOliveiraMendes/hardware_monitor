@@ -206,3 +206,36 @@ def get_daily_temperature_picks(device_type=None, name=None, page=0):
         cur = conn.cursor()
         cur.execute(query, params)
         return cur.fetchall()
+    
+def get_temperature_series(device_type=None, name=None, start=None, end=None, page=0):
+    query_sql = """
+        SELECT datetime(timestamp, 'localtime'), device_type, name, value
+        FROM metrics
+        WHERE type = 'temperature'
+    """
+
+    params = []
+
+    if device_type:
+        query_sql += " AND device_type = ?"
+        params.append(device_type)
+
+    if name:
+        query_sql += " AND name = ?"
+        params.append(name)
+
+    if start:
+        query_sql += " AND timestamp >= ?"
+        params.append(start)
+
+    if end:
+        query_sql += " AND timestamp <= ?"
+        params.append(end)
+
+    query_sql += " ORDER BY timestamp ASC LIMIT 500"
+
+    if page:
+        query_sql += " OFFSET ?"
+        params.append(page * 500)
+
+    return query(query_sql, params)

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2 class="mb-4">Temperatura ao longo do tempo</h2>
+    <div class="card shadow-sm p-3">
+        <canvas id="chart"></canvas>
+    </div>
+{% endblock content %}
+{% block script %}
+    <script>
+        const url = "{{ url_for('api.temperature_series') }}";
+        let chart;
+
+        function renderChart(ctx, config) {
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, config);
+        }
+
+        function getColor(i) {
+            const colors = [
+                "#ff6384", "#36a2eb", "#ffcd56",
+                "#4bc0c0", "#9966ff", "#ff9f40"
+            ];
+            return colors[i % colors.length];
+        }
+
+        async function loadChart() {
+            const params = new URLSearchParams(window.location.search);
+
+            const res = await fetch(url + "?" + params.toString());
+            const rawData = await res.json();
+
+            // 1. labels (timestamps únicos)
+            const labels = [...new Set(rawData.map(d => d.timestamp))].sort();
+
+            // 2. agrupar por sensor
+            const grouped = {};
+
+            for (const d of rawData) {
+                const key = `${d.device_type}-${d.name}`;
+
+                if (!grouped[key]) grouped[key] = {};
+
+                grouped[key][d.timestamp] = d.value;
+            }
+
+            // 3. montar datasets
+            const datasets = [];
+
+            let i = 0;
+
+            for (const key in grouped) {
+                const g = grouped[key];
+
+                const data = labels.map(t => g[t] ?? null);
+
+                datasets.push({
+                    label: key,
+                    data: data,
+                    borderWidth: 2,
+                    tension: 0.3,
+                    borderColor: getColor(i),
+                    backgroundColor: getColor(i)
+                });
+
+                i++;
+            }
+
+            const ctx = document.getElementById("chart").getContext("2d");
+
+            // 4. criar gráfico
+            new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: "index",
+                        intersect: false
+                    },
+                    scales: {
+                        x: {
+                            type: "time",
+                            time: {
+                                unit: "minute"
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.raw}°C`;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        loadChart();
+
+        setInterval(loadChart, 60000);
+    </script>
+{% endblock script %}

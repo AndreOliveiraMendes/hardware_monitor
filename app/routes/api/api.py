@@ -1,7 +1,9 @@
+from datetime import datetime
+
 from flask import Blueprint, jsonify, render_template, request, url_for
 
 from app.dao import (get_all_heat_scores, get_filters, get_heat_score,
-                     get_latest_metrics, get_metrics)
+                     get_latest_metrics, get_metrics, get_temperature_series)
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -109,6 +111,43 @@ def menu():
                 "description": "get all the heat score",
                 "params":[
                 ]
+            },
+            {
+                "path": url_for('api.temperature_series'),
+                "method": "GET",
+                "description": "obtem a series de dados de temperatura",
+                "params": [
+                    {
+                        "name": "start",
+                        "type": "datetime",
+                        "required": False,
+                        "example": "2026-04-18T00:00"
+                    },
+                    {
+                        "name": "end",
+                        "type": "datetime",
+                        "required": False,
+                        "example": "2026-04-18T23:59"
+                    },
+                    {
+                        "name": "device_type",
+                        "type": "string",
+                        "required": False,
+                        "example": "CPU"
+                    },
+                    {
+                        "name": "name",
+                        "type": "string",
+                        "required": False,
+                        "example": "Core 0"
+                    },
+                    {
+                        "name": "page",
+                        "type": "integer",
+                        "required": False,
+                        "example": 0
+                    }
+                ]
             }
         ]
     }
@@ -173,3 +212,30 @@ def get_hscore():
 @bp.route("/all_heat_score")
 def get_ahscore():
     return jsonify(get_all_heat_scores())
+
+@bp.route("/temperature-series")
+def temperature_series():
+    device_type = request.args.get("device_type")
+    name = request.args.get("name")
+    start = request.args.get("start")
+    end = request.args.get("end")
+
+    try:
+        page = int(request.args.get("page", 0))
+    except:
+        page = 0
+
+    rows = get_temperature_series(device_type, name, start, end, page)
+
+    # transforma em dict (melhor pro frontend)
+    data = [
+        {
+            "timestamp": r[0],
+            "device_type": r[1],
+            "name": r[2],
+            "value": r[3],
+        }
+        for r in rows
+    ]
+
+    return jsonify(data)

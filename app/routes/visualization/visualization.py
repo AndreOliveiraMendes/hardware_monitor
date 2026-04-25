@@ -16,6 +16,10 @@ def latest():
 def dashboard():
     return render_template("visualization/dashboard.html")
 
+@bp.route("/grafico-temperatura")
+def grafico_temperatura():
+    return render_template("visualization/temperature.html")
+
 @bp.route("/extremos")
 def min_max_temp():
     device_type = request.args.get("device_type")
