@@ -14,67 +14,57 @@
         <div class="row justify-content-center">
             <div class="col-lg-9">
                 {% for ep in info.endpoints %}
-                    {% set icon = "fa-temperature-high" if "temperature" in ep.path else
-                                            "fa-chart-line" if "metrics" in ep.path else
-                                            "fa-filter" if "filters" in ep.path else
-                                            "fa-fire" if "heat" in ep.path else
-                                            "fa-circle-info" %}
+                    {% set outer_loop = loop %}
                     <div class="card mb-3 shadow-sm border-0">
                         <div class="card-body">
                             <!-- topo -->
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <div>
-                                    <span class="badge {% if ep.method == 'GET' %}bg-success {% elif ep.method == 'POST' %}bg-warning text-dark {% elif ep.method == 'DELETE' %}bg-danger {% else %}bg-secondary{% endif %}">
-                                        {{ ep.method }}
-                                    </span>
-                                    <i class="fa-solid {{ icon }} ms-2 text-muted"></i>
+                                    <span class="badge bg-success">{{ ep.method }}</span>
+                                    <i class="fa-solid fa-link ms-2 text-muted"></i>
                                 </div>
-                                <code class="text-dark small">{{ ep.path }}</code>
+                                <code class="small">{{ ep.path }}</code>
                             </div>
-                            <!-- descrição -->
                             <p class="text-muted mb-3">{{ ep.description }}</p>
-                            <!-- parâmetros -->
+                            <!-- PARAMS DINÂMICOS -->
                             {% if ep.params %}
                                 <div class="mb-3">
                                     <small class="text-muted">
-                                        <i class="fa-solid fa-sliders me-1"></i>
-                                        Parâmetros
+                                        <i class="fa-solid fa-sliders me-1"></i> Parâmetros
                                     </small>
-                                    <ul class="list-group list-group-flush mt-2">
+                                    <div class="row mt-2">
                                         {% for p in ep.params %}
-                                            <li class="list-group-item px-0 py-2 border-0">
-                                                <div class="d-flex justify-content-between">
-                                                    <div>
-                                                        <i class="fa-solid fa-circle-dot text-secondary me-1"></i>
-                                                        <code>{{ p.name }}</code>
-                                                        <span class="text-muted">({{ p.type }})</span>
-                                                        {% if p.required %}
-                                                            <span class="badge bg-danger ms-1">required</span>
-                                                        {% else %}
-                                                            <span class="badge bg-secondary ms-1">optional</span>
-                                                        {% endif %}
-                                                    </div>
-                                                </div>
-                                                <small class="text-muted">
-                                                    <i class="fa-solid fa-code me-1"></i>
-                                                    ex: {{ p.example }}
-                                                </small>
-                                            </li>
+                                            <div class="col-md-4 mb-2">
+                                                <input type="{{ p.type|input_type }}"
+                                                       class="form-control form-control-sm param-input"
+                                                       placeholder="{{ p.name }} ({{ p.type }})"
+                                                       data-name="{{ p.name }}"
+                                                       data-endpoint="{{ outer_loop.index0 }}">
+                                            </div>
                                         {% endfor %}
-                                    </ul>
+                                    </div>
                                 </div>
                             {% endif %}
-                            <!-- ações -->
-                            <div class="d-flex justify-content-between align-items-center">
-                                <a href="{{ ep.path }}" target="_blank" class="btn btn-sm btn-primary">
-                                    <i class="fa-solid fa-play me-1"></i>
-                                    Testar
-                                </a>
+                            <!-- BOTÕES -->
+                            <div class="d-flex gap-2 mb-2">
+                                <button class="btn btn-sm btn-primary"
+                                        onclick="callEndpoint({{ loop.index0 }}, '{{ ep.path }}')">
+                                    <i class="fa-solid fa-play me-1"></i> Testar
+                                </button>
                                 <button class="btn btn-sm btn-outline-secondary"
-                                        onclick="navigator.clipboard.writeText('{{ ep.path }}')">
+                                        onclick="copyUrl('{{ ep.path }}')">
                                     <i class="fa-solid fa-copy"></i>
                                 </button>
+                                <button class="btn btn-sm btn-outline-danger"
+                                        onclick="clearResponse({{ loop.index0 }})">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
                             </div>
+                            <!-- STATUS -->
+                            <div id="status-{{ loop.index0 }}" class="small mb-2 d-none"></div>
+                            <!-- RESULTADO -->
+                            <pre class="bg-dark text-light p-3 rounded small d-none"
+                                 id="response-{{ loop.index0 }}"></pre>
                         </div>
                     </div>
                 {% endfor %}
@@ -82,3 +72,88 @@
         </div>
     </div>
 {% endblock content %}
+{% block script %}
+    <script>
+        function copyUrl(url) {
+            navigator.clipboard.writeText(url);
+        }
+
+        function clearResponse(index) {
+            const pre = document.getElementById(`response-${index}`);
+            const status = document.getElementById(`status-${index}`);
+
+            pre.classList.add("d-none");
+            pre.textContent = "";
+
+            status.classList.add("d-none");
+            status.textContent = "";
+        }
+
+        function getStatusColor(code) {
+            if (code >= 200 && code < 300) return "text-success";
+            if (code >= 300 && code < 400) return "text-warning";
+            if (code >= 400) return "text-danger";
+            return "text-secondary";
+        }
+
+        async function callEndpoint(index, baseUrl) {
+            const inputs = document.querySelectorAll(
+                `.param-input[data-endpoint="${index}"]`
+            );
+
+            const params = new URLSearchParams();
+
+            inputs.forEach(input => {
+                if (input.value) {
+                    params.append(input.dataset.name, input.value);
+                }
+            });
+
+            const fullUrl = baseUrl + (params.toString() ? "?" + params : "");
+
+            const pre = document.getElementById(`response-${index}`);
+            const status = document.getElementById(`status-${index}`);
+
+            pre.classList.remove("d-none");
+            status.classList.remove("d-none");
+
+            pre.textContent = "Carregando...";
+
+            const start = performance.now();
+
+            try {
+                const res = await fetch(fullUrl);
+                const time = (performance.now() - start).toFixed(1);
+
+                let data;
+
+                try {
+                    data = await res.json();
+                } catch {
+                    data = await res.text();
+                }
+
+                // STATUS
+                status.className = `small mb-2 ${getStatusColor(res.status)}`;
+                status.innerHTML = `
+                    <i class="fa-solid fa-circle-info me-1"></i>
+                    Status: <b>${res.status}</b> • ${time} ms
+                `;
+
+                // BODY
+                pre.textContent = typeof data === "string"
+                    ? data
+                    : JSON.stringify(data, null, 2);
+
+            } catch (err) {
+                status.className = "small mb-2 text-danger";
+                status.innerHTML = `
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                    Erro na requisição
+                `;
+
+                pre.textContent = err;
+            }
+        }
+    </script>
+{% endblock script %}
