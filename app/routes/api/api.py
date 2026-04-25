@@ -207,7 +207,7 @@ def get_hscore():
     device_type = request.args.get("device_type")
     name = request.args.get("name")
     
-    if not host_ip or device_type or name:
+    if not host_ip or not device_type or not name:
         current_app.logger.error(f"not enought info: ({host_ip}, {device_type}, {name})")
         return jsonify({"error": "not enought information"}), 500
     
