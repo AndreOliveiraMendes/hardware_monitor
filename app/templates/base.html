@@ -73,13 +73,16 @@
         <!-- bootstrap -->
         <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
         <!-- chart.js -->
-        <script src="{{ url_for('static', filename='chart/js/chart.js') }}"></script>
-        <!-- prism.js -->
+        <script src="{{ url_for('static', filename='chart/chart.umd.min.js') }}"></script>
+        <!-- adapters -->
+        <script src="{{ url_for('static', filename='chart/plugins/chartjs-adapter-date-fns.js') }}"></script>
+        <!-- plugins -->
+        <script src="{{ url_for('static', filename='chart/plugins/chartjs-plugin-zoom.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='chart/plugins/chartjs-plugin-annotation.js') }}"></script>
+        <script src="{{ url_for('static', filename='chart/plugins/chartjs-plugin-datalabels.js') }}"></script>
+        <script src="{{ url_for('static', filename='chart/plugins/chartjs-plugin-colorschemes.js') }}"></script>
+        <!-- prism -->
         <script src="{{ url_for('static', filename='prism.js/js/prism.js') }}"></script>
-        {# CDN chart/prism #}
-        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
-        {# end of CDN #}
         {% block script %}
         {% endblock script %}
     </body>
