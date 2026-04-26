@@ -32,20 +32,22 @@ def grafico_temperatura():
 def min_max_temp():
     device_type = request.args.get("device_type")
     name = request.args.get("name")
-    selected = {
-        "device_type": device_type,
-        "name": name
-    }
-    
+
     try:
         page = int(request.args.get("page", 0))
-    except (ValueError, TypeError):
+    except:
         page = 0
 
-    data = get_daily_temperature_picks(device_type, name, page)
+    page = max(page, 0)
+
+    result = get_daily_temperature_picks(device_type, name, page)
 
     return render_template(
         "visualization/minmax.html",
-        data = data,
-        selected = selected
+        data=result["data"],
+        pagination=result,
+        selected={
+            "device_type": device_type,
+            "name": name
+        }
     )

@@ -193,15 +193,8 @@ def get_filters(info_type, device_type):
 
         return info_types, device_types, names
 
-def get_daily_temperature_picks(device_type=None, name=None, page=0):
-    query = """
-        SELECT
-            DATE(datetime(timestamp, 'localtime')) as day,
-            device_type,
-            name,
-            MIN(value) as min_temp,
-            MAX(value) as max_temp,
-            AVG(value) as avg
+def get_daily_temperature_picks(device_type=None, name=None, page=0, per_page=100):
+    base_query = """
         FROM metrics
         WHERE type = 'temperature'
     """
@@ -209,24 +202,54 @@ def get_daily_temperature_picks(device_type=None, name=None, page=0):
     params = []
 
     if device_type:
-        query += " AND device_type = ?"
+        base_query += " AND device_type = ?"
         params.append(device_type)
 
     if name:
-        query += " AND name = ?"
+        base_query += " AND name = ?"
         params.append(name)
 
-    query += " GROUP BY day, device_type, name ORDER BY day DESC"
-    query += " LIMIT 100"
+    group_by = " GROUP BY day, device_type, name"
 
-    if page:
-        query += " OFFSET ?"
-        params.append(100 * page)
+    # total
+    count_query = f"""
+        SELECT COUNT(*) FROM (
+            SELECT 1
+            {base_query}
+            GROUP BY DATE(datetime(timestamp, 'localtime')), device_type, name
+        )
+    """
 
     with get_conn() as conn:
         cur = conn.cursor()
-        cur.execute(query, params)
-        return cur.fetchall()
+        cur.execute(count_query, params)
+        total = cur.fetchone()[0]
+
+        data_query = f"""
+            SELECT
+                DATE(datetime(timestamp, 'localtime')) as day,
+                device_type,
+                name,
+                MIN(value),
+                MAX(value),
+                AVG(value)
+            {base_query}
+            GROUP BY day, device_type, name
+            ORDER BY day DESC
+            LIMIT ? OFFSET ?
+        """
+
+        cur.execute(data_query, params + [per_page, page * per_page])
+        rows = cur.fetchall()
+
+    return {
+        "data": rows,
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "has_next": (page + 1) * per_page < total,
+        "has_prev": page > 0
+    }
     
 def get_temperature_series(device_type=None, name=None, start=None, end=None, page=0):
     query_sql = """

@@ -14,25 +14,12 @@
                 <option value="">Todos</option>
             </select>
         </div>
-        <div class="col-auto">
-            <label>Page</label>
-            <input type="number"
-                   name="page"
-                   value="{{ request.args.get('page', 0) }}"
-                   class="form-control">
-        </div>
         <div class="col-auto align-self-end">
             <button type="submit" class="btn btn-primary">Filtrar</button>
         </div>
     </form>
     <div class="card shadow-sm p-3 mb-4">
-        <div class="alert alert-info">
-            {% if data %}
-                {{ data|length }} linhas de dados coletados
-            {% else %}
-                Nenhum dado encontrado
-            {% endif %}
-        </div>
+        <div class="alert alert-info">{{ pagination.total }} registros encontrados</div>
         <div class="mb-4">
             <button class="btn btn-sm btn-secondary mb-2" onclick="chart.resetZoom()">Reset Zoom</button>
             <canvas id="tempChart"></canvas>
@@ -40,7 +27,7 @@
         <ul class="list-group list-group-flush">
             {% for day, dtype, name, min_temp, max_temp, avg in data %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span class="fw-semibold">[{{ loop.index + 20*request.args.get('page', 0) |int }}] {{ day }} | {{ dtype }} | {{ name }}</span>
+                    <span class="fw-semibold">[{{ loop.index + pagination.page * pagination.per_page }}] {{ day }} | {{ dtype }} | {{ name }}</span>
                     <span>
                         <span class="text-primary fw-bold">min: {{ min_temp }}°C</span>
                         |
@@ -52,6 +39,25 @@
             {% else %}
                 <li class="list-group-item">Sem dados disponíveis</li>
             {% endfor %}
+        </ul>
+    </div>
+    <div class="d-flex justify-content-center mt-3">
+        <ul class="pagination">
+            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                <a class="page-link"
+                   href="?page={{ pagination.page - 1 }}&device_type={{ selected.device_type }}&name={{ selected.name }}">
+                    ←
+                </a>
+            </li>
+            <li class="page-item active">
+                <span class="page-link">{{ pagination.page + 1 }}</span>
+            </li>
+            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                <a class="page-link"
+                   href="?page={{ pagination.page + 1 }}&device_type={{ selected.device_type }}&name={{ selected.name }}">
+                    →
+                </a>
+            </li>
         </ul>
     </div>
 {% endblock content %}
