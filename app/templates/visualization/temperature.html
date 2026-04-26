@@ -34,6 +34,18 @@
             <button type="submit" class="btn btn-primary">Filtrar</button>
         </div>
     </form>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <button class="btn btn-sm btn-outline-secondary" onclick="prevPage()">← Anterior</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="nextPage()">Próxima →</button>
+        </div>
+        <div>
+            Página: <span id="page-indicator">0</span>
+        </div>
+        <div>
+            <button class="btn btn-sm btn-outline-primary" onclick="reloadAll()">Atualizar</button>
+        </div>
+    </div>
     <div class="card shadow-sm p-3">
         <button class="btn btn-sm btn-secondary mb-2" onclick="chart.resetZoom()">Reset Zoom</button>
         <canvas id="chart"></canvas>
@@ -48,6 +60,7 @@
         let chart;
         const selected = {{ selected|tojson }};
         let first = true;
+        let lastFetchCount = 0;
 
         function getColor(i) {
             const colors = [
@@ -62,6 +75,7 @@
 
             const res = await fetch(url + "?" + params.toString());
             const rawData = await res.json();
+            lastFetchCount = rawData.length;
 
             if (!rawData || rawData.length === 0) {
                 if (chart) chart.destroy();
@@ -305,6 +319,40 @@
             }
         }
 
+        function getPage() {
+            const params = new URLSearchParams(window.location.search);
+            return Math.max(0, parseInt(params.get("page") || "0", 10));
+        }
+
+        function setPage(page) {
+            const params = new URLSearchParams(window.location.search);
+            params.set("page", Math.max(0, page));
+
+            history.pushState(null, "", "?" + params.toString());
+
+            updatePageIndicator();
+            loadChart();
+            loadFilters();
+        }
+
+        function nextPage() {
+            if (lastFetchCount < 500) return; // não avança
+            setPage(getPage() + 1);
+        }
+
+        function prevPage() {
+            setPage(getPage() - 1);
+        }
+
+        function updatePageIndicator() {
+            document.getElementById("page-indicator").textContent = getPage();
+        }
+
+        function reloadAll() {
+            loadChart();
+            loadFilters();
+        }
+
         // dependência entre selects (igual metrics)
         document.querySelector("select[name='device_type']")
             .addEventListener("change", () => {
@@ -317,8 +365,13 @@
             e.preventDefault();
 
             const params = new URLSearchParams(new FormData(form));
+
+            // 🔥 sempre volta pra página 0 quando muda filtro
+            params.set("page", 0);
+
             history.pushState(null, "", "?" + params.toString());
 
+            updatePageIndicator();
             loadChart();
             loadFilters();
         });
@@ -328,5 +381,6 @@
         loadChart();
 
         setInterval(loadChart, 60000);
+        updatePageIndicator();
     </script>
 {% endblock script %}
