@@ -16,67 +16,42 @@
                    value="{{ request.args.get('end') }}">
         </div>
         <div class="col-auto">
-            <label>informação</label>
-            <select name="info_type" class="form-control">
-                <option value="">Todos</option>
-                {% for type in info_types %}
-                    <option value="{{ type }}"
-                            {% if request.args.get('type') == type %}selected{% endif %}>{{ type }}</option>
-                {% endfor %}
-            </select>
+            <label>Informação</label>
+            <select name="info_type" class="form-control"></select>
         </div>
         <div class="col-auto">
             <label>Tipo</label>
-            <select name="device_type" class="form-control">
-                <option value="">Todos</option>
-                {% for type in device_types %}
-                    <option value="{{ type }}"
-                            {% if request.args.get('device_type') == type %}selected{% endif %}>{{ type }}</option>
-                {% endfor %}
-            </select>
+            <select name="device_type" class="form-control"></select>
         </div>
         <div class="col-auto">
             <label>Nome</label>
-            <select name="name" class="form-control">
-                <option value="">Todos</option>
-                {% for name in names %}
-                    <option value="{{ name }}"
-                            {% if request.args.get('name') == name %}selected{% endif %}>{{ name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-auto">
-            <label>Page</label>
-            <input type="number" name="page" value="{{ request.args.get('page', 0) }}" class="form-control">
+            <select name="name" class="form-control"></select>
         </div>
         <div class="col-auto align-self-end">
             <button type="submit" class="btn btn-primary">Filtrar</button>
         </div>
     </form>
-    <h2 class="mb-3">dados coletados:</h2>
+    <h2 class="mb-3">Dados coletados:</h2>
     <div id="info"></div>
-    <div class="card shadow-sm p-3 mb-4">
+    <div class="card shadow-sm p-3 mb-3">
         <ul id="data-list" class="list-group list-group-flush">
         </ul>
     </div>
+    <div id="pagination" class="d-flex justify-content-center"></div>
 {% endblock content %}
 {% block script %}
     <script>
         const form = document.querySelector("form");
-        const url = "{{ url_for('api.all_metrics') }}"
-        const url_filters = "{{ url_for('api.filters') }}"
+        const url = "{{ url_for('api.all_metrics') }}";
+        const url_filters = "{{ url_for('api.filters') }}";
 
         function formatInfo(params) {
             const start = params.get("start");
             const end = params.get("end");
 
-            if (start && end) {
-                return `Exibindo de <b>${start}</b> até <b>${end}</b>`;
-            } else if (start) {
-                return `Exibindo a partir de <b>${start}</b>`;
-            } else if (end) {
-                return `Exibindo até <b>${end}</b>`;
-            }
+            if (start && end) return `De <b>${start}</b> até <b>${end}</b>`;
+            if (start) return `A partir de <b>${start}</b>`;
+            if (end) return `Até <b>${end}</b>`;
             return "";
         }
 
@@ -98,14 +73,11 @@
             if (!meta) return "";
 
             if (type === "battery") {
-                return `Status: ${meta.status ?? "?"}\n` +
-                    `AC: ${meta.ac_online ? "plugado" : "bateria"}\n` +
-                    `Capacidade: ${meta.capacity ?? "?"}%`;
+                return `Status: ${meta.status ?? "?"}\nAC: ${meta.ac_online ? "plugado" : "bateria"}\nCap: ${meta.capacity ?? "?"}%`;
             }
 
             if (type === "network") {
-                return `Local: ${meta.local ?? "?"}\n` +
-                    `Tailscale: ${meta.tailscale ?? "?"}`;
+                return `Local: ${meta.local ?? "?"}\nTailscale: ${meta.tailscale ?? "?"}`;
             }
 
             return JSON.stringify(meta, null, 1);
@@ -114,8 +86,15 @@
         async function loadData() {
             const params = new URLSearchParams(window.location.search);
 
+            if (!params.has("page")) params.set("page", "0");
+
             const res = await fetch(url + "?" + params.toString());
-            const data = await res.json();
+            const result = await res.json();
+
+            const data = result.data;
+            const page = result.page;
+            const hasNext = result.has_next;
+            const hasPrev = result.has_prev;
 
             const list = document.getElementById("data-list");
             const info = document.getElementById("info");
@@ -123,19 +102,16 @@
             list.innerHTML = "";
 
             const infoText = formatInfo(params);
-            if (infoText) {
-                info.innerHTML = `<div class="alert alert-info">${infoText}</div>`;
-            } else {
-                info.innerHTML = "";
-            }
+            info.innerHTML = infoText
+                ? `<div class="alert alert-info">${infoText}<br><small>Total: ${result.total}</small></div>`
+                : "";
 
             if (!data || data.length === 0) {
                 list.innerHTML = '<li class="list-group-item">No data</li>';
                 return;
             }
 
-            const page = parseInt(params.get('page') || "0", 10);
-            let index = page * 100 + 1;
+            let index = page * result.per_page + 1;
 
             for (const item of data) {
                 const { timestamp, infotype, device_type, name, value } = item;
@@ -151,33 +127,56 @@
                 let meta = {};
                 try {
                     meta = item.meta ? JSON.parse(item.meta) : {};
-                } catch (e) {
-                    meta = {};
-                }
+                } catch {}
 
-                const tooltip = formatMetaTooltip(infotype, meta)
-                    .replace(/"/g, '&quot;'); // evita quebrar HTML
+                const tooltip = formatMetaTooltip(infotype, meta).replace(/"/g, '&quot;');
 
                 list.innerHTML += `
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <li class="list-group-item d-flex justify-content-between">
                         <span title="${tooltip}">
                             <i class="fa-solid ${getInfoIcon(infotype)} ${getInfoColor(infotype)} me-2"></i>
                             ${label}
                         </span>
-
-                        <span class="fw-bold">
-                            ${value ?? "?"}${unit}
-                        </span>
+                        <span class="fw-bold">${value ?? "?"}${unit}</span>
                     </li>
                 `;
 
                 index++;
             }
+
+            renderPagination(page, hasPrev, hasNext);
+        }
+
+        function renderPagination(page, hasPrev, hasNext) {
+            const container = document.getElementById("pagination");
+
+            container.innerHTML = `
+                <ul class="pagination">
+                    <li class="page-item ${!hasPrev ? "disabled" : ""}">
+                        <button class="page-link" onclick="changePage(${page - 1})">←</button>
+                    </li>
+
+                    <li class="page-item active">
+                        <span class="page-link">${page + 1}</span>
+                    </li>
+
+                    <li class="page-item ${!hasNext ? "disabled" : ""}">
+                        <button class="page-link" onclick="changePage(${page + 1})">→</button>
+                    </li>
+                </ul>
+            `;
+        }
+
+        function changePage(newPage) {
+            const params = new URLSearchParams(window.location.search);
+            params.set("page", newPage);
+
+            history.pushState(null, "", "?" + params.toString());
+            loadData();
         }
 
         async function loadFilters() {
             const params = new URLSearchParams(new FormData(form));
-
             const res = await fetch(url_filters + "?" + params.toString());
             const data = await res.json();
 
@@ -190,7 +189,7 @@
             const select = document.querySelector(`select[name="${name}"]`);
             if (!select) return;
 
-            const current = select.value;
+            const current = new URLSearchParams(window.location.search).get(name);
 
             select.innerHTML = `<option value="">Todos</option>`;
 
@@ -203,7 +202,18 @@
             }
         }
 
-        // quando mudar info_type → reseta device + name
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const params = new URLSearchParams(new FormData(form));
+            params.set("page", "0");
+
+            history.pushState(null, "", "?" + params.toString());
+
+            loadData();
+            loadFilters();
+        });
+
         document.querySelector("select[name='info_type']")
             .addEventListener("change", () => {
                 document.querySelector("select[name='device_type']").value = "";
@@ -211,25 +221,12 @@
                 loadFilters();
             });
 
-        // quando mudar device_type → reseta name
         document.querySelector("select[name='device_type']")
             .addEventListener("change", () => {
                 document.querySelector("select[name='name']").value = "";
                 loadFilters();
             });
 
-        // submit normal continua igual
-        document.querySelector("form").addEventListener("submit", (e) => {
-            e.preventDefault();
-
-            const params = new URLSearchParams(new FormData(form));
-            history.pushState(null, "", "?" + params.toString());
-
-            loadData();
-            loadFilters();
-        });
-
-        // inicial
         loadFilters();
         loadData();
     </script>

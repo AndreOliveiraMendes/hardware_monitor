@@ -166,16 +166,17 @@ def all_metrics():
         page = int(request.args.get("page", 0))
     except (ValueError, TypeError):
         page = 0
+
     start = request.args.get("start")
     end = request.args.get("end")
     tipo_info = request.args.get("info_type")
     tipo_temp = request.args.get("device_type")
     name = request.args.get("name")
-    
-    rows = get_metrics(start, end, tipo_info, tipo_temp, name, page)
+
+    result = get_metrics(start, end, tipo_info, tipo_temp, name, page)
 
     data = []
-    for row in rows:
+    for row in result["data"]:
         data.append({
             "timestamp": row[0],
             "infotype": row[1],
@@ -185,7 +186,14 @@ def all_metrics():
             "meta": row[5]
         })
 
-    return jsonify(data)
+    return jsonify({
+        "data": data,
+        "page": result["page"],
+        "per_page": result["per_page"],
+        "total": result["total"],
+        "has_next": result["has_next"],
+        "has_prev": result["has_prev"]
+    })
 
 @bp.route("/filters")
 def filters():

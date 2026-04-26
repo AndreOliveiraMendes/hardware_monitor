@@ -77,9 +77,8 @@ def get_latest_metrics():
 
     return data
 
-def get_metrics(start, end, tipo_info, tipo_temp, name, page=0):
-    query_sql = """
-        SELECT datetime(timestamp, 'localtime'), type, device_type, name, value, meta
+def get_metrics(start, end, tipo_info, tipo_temp, name, page=0, per_page=100):
+    base_query = """
         FROM metrics
     """
 
@@ -120,15 +119,31 @@ def get_metrics(start, end, tipo_info, tipo_temp, name, page=0):
             params.append(name)
 
     if conditions:
-        query_sql += " WHERE " + " AND ".join(conditions)
+        base_query += " WHERE " + " AND ".join(conditions)
 
-    query_sql += " ORDER BY timestamp DESC LIMIT 100"
+    # total count
+    count_sql = "SELECT COUNT(*) " + base_query
+    total = query(count_sql, params)[0][0]
 
-    if page:
-        query_sql += " OFFSET ?"
-        params.append(100 * page)
+    # dados paginados
+    data_sql = f"""
+        SELECT datetime(timestamp, 'localtime'), type, device_type, name, value, meta
+        {base_query}
+        ORDER BY timestamp DESC
+        LIMIT ? OFFSET ?
+    """
 
-    return query(query_sql, params)
+    params_data = params + [per_page, page * per_page]
+    rows = query(data_sql, params_data)
+
+    return {
+        "data": rows,
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "has_next": (page + 1) * per_page < total,
+        "has_prev": page > 0
+    }
 
 def get_filters(info_type, device_type):
     with get_conn() as conn:
