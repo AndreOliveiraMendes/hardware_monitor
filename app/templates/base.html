@@ -7,16 +7,15 @@
         <meta name="keywords"
               content="sistema, hardware, monitoramento, temperatura, cpu, disco">
         <title>Hardware Monitor</title>
+        <!-- bootstrap 5.2.3 -->
         <link rel="stylesheet"
               href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+        <!-- font awesome -->
         <link rel="stylesheet"
               href="{{ url_for('static', filename='awesome/all.min.css') }}">
-        {# CDN prism #}
-        <link href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.css"
-              rel="stylesheet" />
-        <link href="https://cdn.jsdelivr.net/npm/prismjs/plugins/line-numbers/prism-line-numbers.css"
-              rel="stylesheet" />
-        {# end of CDN #}
+        <!-- prism.js -->
+        <link rel="stylesheet"
+              href="{{ url_for('static', filename='prism.js/css/prism.css') }}">
         {% block style %}
         {% endblock style %}
     </head>
@@ -71,15 +70,15 @@
             {% block content %}
             {% endblock content %}
         </div>
+        <!-- bootstrap -->
         <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+        <!-- chart.js -->
         <script src="{{ url_for('static', filename='chart/js/chart.js') }}"></script>
+        <!-- prism.js -->
+        <script src="{{ url_for('static', filename='prism.js/js/prism.js') }}"></script>
         {# CDN chart/prism #}
         <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/prismjs/prism.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-json.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-markup.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/line-numbers/prism-line-numbers.min.js"></script>
         {# end of CDN #}
         {% block script %}
         {% endblock script %}
