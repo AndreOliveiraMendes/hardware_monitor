@@ -1,6 +1,5 @@
-from datetime import datetime
-
-from flask import Blueprint, current_app, jsonify, render_template, request, url_for
+from flask import (Blueprint, current_app, jsonify, render_template, request,
+                   url_for)
 
 from app.dao import (get_all_heat_scores, get_filters, get_heat_score,
                      get_latest_metrics, get_metrics, get_temperature_series)

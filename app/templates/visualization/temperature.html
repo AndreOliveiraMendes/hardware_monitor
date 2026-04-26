@@ -120,15 +120,50 @@
                             type: "time",
                             time: {
                                 unit: "minute"
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    const date = new Date(value);
+
+                                    return date.toLocaleTimeString("pt-BR", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: false
+                                    });
+                                }
                             }
                         }
                     },
                     plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const date = new Date(context.parsed.x);
+
+                                    return date.toLocaleTimeString("pt-BR", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: false
+                                    }) + " - " + context.parsed.y;
+                                }
+                            }
+                        },
                         zoom: {
                             pan: { enabled: true, mode: "x" },
                             zoom: {
                                 wheel: { enabled: true },
                                 pinch: { enabled: true },
+                                pan: {
+                                    enabled: true,
+                                    mode: 'x',
+                                    threshold: 10
+                                },
+                                drag: {
+                                    enabled: true,
+                                    backgroundColor: 'rgba(225,225,225,0.3)', // Color of the selection box
+                                    borderColor: 'rgba(225,225,225,0.8)',
+                                    borderWidth: 1,
+                                },
                                 mode: "x"
                             }
                         }
