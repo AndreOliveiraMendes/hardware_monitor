@@ -34,6 +34,7 @@
             {% endif %}
         </div>
         <div class="mb-4">
+            <button class="btn btn-sm btn-secondary mb-2" onclick="chart.resetZoom()">Reset Zoom</button>
             <canvas id="tempChart"></canvas>
         </div>
         <ul class="list-group list-group-flush">
@@ -114,90 +115,155 @@
     <script>
         const rawData = {{ data|tojson }};
 
-        // 1. coletar todos os dias únicos
-        const daysSet = new Set();
-        for (const row of rawData) {
-            daysSet.add(row[0]);
+        // 🔥 limite
+        const LIMIT = 80;
+
+        let chart;
+
+        // cores base
+        function getColor(i) {
+            const colors = [
+                "#ff6384", "#36a2eb", "#ffcd56",
+                "#4bc0c0", "#9966ff", "#ff9f40"
+            ];
+            return colors[i % colors.length];
         }
 
-        const labels = Array.from(daysSet).sort(); // ordena
-
-        // 2. agrupar dados
+        // agrupar
         const grouped = {};
 
         for (const row of rawData) {
             const [day, dtype, name, min, max, avg] = row;
             const key = `${dtype}-${name}`;
 
-            if (!grouped[key]) {
-                grouped[key] = {};
-            }
+            if (!grouped[key]) grouped[key] = [];
 
-            grouped[key][day] = { min, max, avg };
+            grouped[key].push({
+                x: day,
+                min,
+                max,
+                avg
+            });
         }
 
-        // 3. montar datasets alinhados
+        // datasets
         const datasets = [];
+        let i = 0;
 
         for (const key in grouped) {
+            const baseColor = getColor(i);
             const g = grouped[key];
 
-            const minData = [];
-            const maxData = [];
-            const avgData = [];
-
-            for (const day of labels) {
-                if (g[day]) {
-                    minData.push(g[day].min);
-                    maxData.push(g[day].max);
-                    avgData.push(g[day].avg);
-                } else {
-                    minData.push(null);
-                    maxData.push(null);
-                    avgData.push(null);
-                }
-            }
-
-            datasets.push({
-                label: `${key} min`,
-                data: minData,
-                borderWidth: 1,
-                borderDash: [5, 5],
-                tension: 0.3,
-                hidden: true
-            });
-
+            // média (linha principal)
             datasets.push({
                 label: `${key} avg`,
-                data: avgData,
+                data: g.map(d => ({ x: d.x, y: d.avg })),
                 borderWidth: 2,
-                tension: 0.3
+                tension: 0.3,
+                borderColor: baseColor,
+                backgroundColor: baseColor,
+                pointRadius: 0,
+                pointHoverRadius: 5
             });
 
+            // faixa min/max (área)
             datasets.push({
-                label: `${key} max`,
-                data: maxData,
-                borderWidth: 1,
-                borderDash: [5, 5],
+                label: `${key} range`,
+                data: g.map(d => ({ x: d.x, y: d.max })),
+                borderWidth: 0,
+                backgroundColor: baseColor + "33", // transparência
+                fill: '-1', // preenche até o dataset anterior
                 tension: 0.3,
-                hidden: true
+                pointRadius: 0
             });
+
+            // linha min (invisível só pra base do fill)
+            datasets.push({
+                label: `${key} min`,
+                data: g.map(d => ({ x: d.x, y: d.min })),
+                borderWidth: 0,
+                tension: 0.3,
+                pointRadius: 0
+            });
+
+            i++;
         }
 
-        // 4. criar gráfico
         const ctx = document.getElementById('tempChart');
 
-        new Chart(ctx, {
+        if (chart) chart.destroy();
+
+        chart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: labels,
                 datasets: datasets
             },
             options: {
                 responsive: true,
+                animation: false,
+
                 interaction: {
                     mode: 'index',
                     intersect: false
+                },
+
+                scales: {
+                    x: {
+                        type: "time",
+                        time: {
+                            unit: "day"
+                        }
+                    }
+                },
+
+                plugins: {
+
+                    // 🔥 TOOLTIP MELHOR
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label} → ${context.parsed.y}`;
+                            }
+                        }
+                    },
+
+                    // 🔥 ZOOM / PAN
+                    zoom: {
+                        pan: {
+                            enabled: true,
+                            mode: "x"
+                        },
+                        zoom: {
+                            wheel: { enabled: true },
+                            pinch: { enabled: true },
+                            drag: {
+                                enabled: true,
+                                backgroundColor: 'rgba(225,225,225,0.3)'
+                            },
+                            mode: "x"
+                        }
+                    },
+
+                    // 🔥 ANNOTATION (limite)
+                    annotation: {
+                        annotations: {
+                            limitLine: {
+                                type: "line",
+                                yMin: LIMIT,
+                                yMax: LIMIT,
+                                borderColor: "red",
+                                borderWidth: 2,
+                                borderDash: [6, 6],
+                                label: {
+                                    display: true,
+                                    content: `Limite (${LIMIT}°C)`,
+                                    position: "end",
+                                    backgroundColor: "rgba(255,0,0,0.8)",
+                                    color: "#fff"
+                                }
+                            }
+                        }
+                    }
                 }
             }
         });

@@ -68,15 +68,15 @@
                 return;
             }
 
-            // labels
-            const labels = [...new Set(rawData.map(d => d.timestamp))].sort();
-
-            // agrupar
+            // agrupar por device_type + name
             const grouped = {};
             for (const d of rawData) {
                 const key = `${d.device_type}-${d.name}`;
-                if (!grouped[key]) grouped[key] = {};
-                grouped[key][d.timestamp] = d.value;
+                if (!grouped[key]) grouped[key] = [];
+                grouped[key].push({
+                    x: d.timestamp,
+                    y: d.value
+                });
             }
 
             // datasets
@@ -84,18 +84,16 @@
             let i = 0;
 
             for (const key in grouped) {
-                const g = grouped[key];
-                const data = labels.map(t => g[t] ?? null);
-
                 datasets.push({
                     label: key,
-                    data: data,
+                    data: grouped[key],
                     borderWidth: 2,
                     tension: 0.3,
                     borderColor: getColor(i),
-                    backgroundColor: getColor(i)
+                    backgroundColor: getColor(i),
+                    pointRadius: 0,
+                    pointHoverRadius: 5
                 });
-
                 i++;
             }
 
@@ -103,18 +101,23 @@
 
             if (chart) chart.destroy();
 
+            // 🔥 limite de temperatura
+            const LIMIT = 80;
+
             chart = new Chart(ctx, {
                 type: "line",
                 data: {
-                    labels: labels,
                     datasets: datasets
                 },
                 options: {
                     responsive: true,
+                    animation: false,
+
                     interaction: {
                         mode: "index",
                         intersect: false
                     },
+
                     scales: {
                         x: {
                             type: "time",
@@ -124,7 +127,6 @@
                             ticks: {
                                 callback: function(value) {
                                     const date = new Date(value);
-
                                     return date.toLocaleTimeString("pt-BR", {
                                         hour: "2-digit",
                                         minute: "2-digit",
@@ -134,37 +136,67 @@
                             }
                         }
                     },
+
                     plugins: {
+
+                        // 🔥 TOOLTIP MELHORADO
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
                                     const date = new Date(context.parsed.x);
 
-                                    return date.toLocaleTimeString("pt-BR", {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                        hour12: false
-                                    }) + " - " + context.parsed.y;
+                                    return `${context.dataset.label} • ${
+                                        date.toLocaleTimeString("pt-BR", {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                            hour12: false
+                                        })
+                                    } → ${context.parsed.y}`;
                                 }
                             }
                         },
+
+                        // 🔥 ZOOM / PAN CORRETO
                         zoom: {
-                            pan: { enabled: true, mode: "x" },
+                            pan: {
+                                enabled: true,
+                                mode: "x",
+                                threshold: 10
+                            },
                             zoom: {
                                 wheel: { enabled: true },
                                 pinch: { enabled: true },
-                                pan: {
-                                    enabled: true,
-                                    mode: 'x',
-                                    threshold: 10
-                                },
                                 drag: {
                                     enabled: true,
-                                    backgroundColor: 'rgba(225,225,225,0.3)', // Color of the selection box
+                                    backgroundColor: 'rgba(225,225,225,0.3)',
                                     borderColor: 'rgba(225,225,225,0.8)',
                                     borderWidth: 1,
                                 },
                                 mode: "x"
+                            }
+                        },
+
+                        // 🔥 ANNOTATION (LINHA DE LIMITE)
+                        annotation: {
+                            annotations: {
+                                limitLine: {
+                                    type: "line",
+                                    yMin: LIMIT,
+                                    yMax: LIMIT,
+                                    borderColor: "red",
+                                    borderWidth: 2,
+                                    borderDash: [6, 6],
+                                    label: {
+                                        display: true,
+                                        content: `Limite (${LIMIT}°C)`,
+                                        position: "end",
+                                        backgroundColor: "rgba(255,0,0,0.8)",
+                                        color: "#fff",
+                                        font: {
+                                            size: 10
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
