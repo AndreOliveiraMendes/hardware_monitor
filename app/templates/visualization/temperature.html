@@ -101,8 +101,11 @@
 
             if (chart) chart.destroy();
 
-            // 🔥 limite de temperatura
-            const LIMIT = 80;
+            // 🔥 limites de temperatura
+            const LIMIT_1 = 70; // primeiro nivel de alert
+            const LIMIT_2 = 75;
+            const LIMIT_3 = 80;
+            const LIMIT_4 = 90; // ta pegando fogo bixo
 
             chart = new Chart(ctx, {
                 type: "line",
@@ -179,23 +182,80 @@
                         // 🔥 ANNOTATION (LINHA DE LIMITE)
                         annotation: {
                             annotations: {
-                                limitLine: {
+                                limit1: {
                                     type: "line",
-                                    yMin: LIMIT,
-                                    yMax: LIMIT,
-                                    borderColor: "red",
+                                    yMin: LIMIT_1,
+                                    yMax: LIMIT_1,
+                                    borderColor: "#f1c40f", // amarelo
+                                    borderWidth: 1,
+                                    borderDash: [4, 4],
+                                    label: {
+                                        display: true,
+                                        content: `70°C`,
+                                        position: "end",
+                                        backgroundColor: "#f1c40f",
+                                        color: "#000",
+                                        font: { size: 10 }
+                                    }
+                                },
+
+                                limit2: {
+                                    type: "line",
+                                    yMin: LIMIT_2,
+                                    yMax: LIMIT_2,
+                                    borderColor: "#e67e22", // laranja
+                                    borderWidth: 1,
+                                    borderDash: [4, 4],
+                                    label: {
+                                        display: true,
+                                        content: `75°C`,
+                                        position: "end",
+                                        backgroundColor: "#e67e22",
+                                        color: "#fff",
+                                        font: { size: 10 }
+                                    }
+                                },
+
+                                limit3: {
+                                    type: "line",
+                                    yMin: LIMIT_3,
+                                    yMax: LIMIT_3,
+                                    borderColor: "#e74c3c", // vermelho
                                     borderWidth: 2,
                                     borderDash: [6, 6],
                                     label: {
                                         display: true,
-                                        content: `Limite (${LIMIT}°C)`,
+                                        content: `80°C`,
                                         position: "end",
-                                        backgroundColor: "rgba(255,0,0,0.8)",
+                                        backgroundColor: "#e74c3c",
                                         color: "#fff",
-                                        font: {
-                                            size: 10
-                                        }
+                                        font: { size: 10 }
                                     }
+                                },
+
+                                limit4: {
+                                    type: "line",
+                                    yMin: LIMIT_4,
+                                    yMax: LIMIT_4,
+                                    borderColor: "#8b0000", // vermelho escuro
+                                    borderWidth: 2,
+                                    borderDash: [6, 6],
+                                    label: {
+                                        display: true,
+                                        content: `90°C 🔥`,
+                                        position: "end",
+                                        backgroundColor: "#8b0000",
+                                        color: "#fff",
+                                        font: { size: 10 }
+                                    }
+                                },
+
+                                dangerZone: {
+                                    type: "box",
+                                    yMin: LIMIT_3,
+                                    yMax: LIMIT_4,
+                                    backgroundColor: "rgba(255,0,0,0.08)",
+                                    borderWidth: 0
                                 }
                             }
                         }
