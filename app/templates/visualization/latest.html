@@ -34,13 +34,13 @@
         function getTailscaleIcon(status) {
             if (status.includes("direct")) return "fa-circle-nodes";
             if (status.includes("relay")) return "fa-network-wired";
+	    if (status.includes("online")) return "fa-tower-broadcast";
             return "fa-circle-question";
         }
 
         function getLocalIcon(status) {
-            if (status === "up") return "fa-circle-check";
-            if (status === "down") return "fa-circle-xmark";
-            return "fa-circle-question";
+            if (status) return "fa-house-signal";
+            return "fa-wifi";
         }
 
         async function loadData() {
