@@ -179,6 +179,7 @@
 
         async function loadFilters() {
             const params = new URLSearchParams(new FormData(form));
+
             if (first) {
                 if (selected['device_type'])
                     params.set("device_type", selected['device_type']);
@@ -186,12 +187,15 @@
                 if (selected['name'])
                     params.set("name", selected['name']);
 
+                if (selected['info_type'])
+                    params.set("info_type", selected['info_type ']);
+
                 first = false;
             } else {
                 selected['device_type'] = params.get('device_type');
                 selected['name'] = params.get('name');
+                selected['info_type'] = params.get('info_type');
             }
-            params.set("info_type", "temperature");
             const res = await fetch(url_filters + "?" + params.toString());
             const data = await res.json();
 
@@ -204,7 +208,7 @@
             const select = document.querySelector(`select[name="${name}"]`);
             if (!select) return;
 
-            const current = new URLSearchParams(window.location.search).get(name);
+            const current = selected[name];  // 🔥 aqui
 
             select.innerHTML = `<option value="">Todos</option>`;
 
