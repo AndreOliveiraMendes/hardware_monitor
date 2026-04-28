@@ -3,16 +3,19 @@
     <h2 class="mb-3">CPU</h2>
     <div class="card shadow-sm p-3 mb-4">
         <ul id="cpu-list" class="list-group list-group-flush">
+            <li class="list-group-item">No data</li>
         </ul>
     </div>
     <h2 class="mb-3">Discos</h2>
     <div class="card shadow-sm p-3 mb-4">
         <ul id="disk-list" class="list-group list-group-flush">
+            <li class="list-group-item">No data</li>
         </ul>
     </div>
     <h2 class="mb-3">Batteria</h2>
     <div class="card shadow-sm p-3 mb-4">
         <ul id="battery" class="list-group list-group-flush">
+            <li class="list-group-item">No data</li>
         </ul>
     </div>
     <h2 class="mb-3">Rede</h2>
@@ -31,30 +34,45 @@
             return { text: `${value}°C`, cls: "text-success" };
         }
 
-        function getBatteryIcon(value) {
-            if (value >= 80) return "fa-battery-full";
-            if (value >= 60) return "fa-battery-three-quarters";
-            if (value >= 40) return "fa-battery-half";
-            if (value >= 20) return "fa-battery-quarter";
-            return "fa-battery-empty";
+        function formatBattery(value) {
+            const icon = getBatteryIcon(value);
+
+            return {
+                text: value == null ? "—" : `${value}%`,
+                icon,
+                cls: value == null ? "text-muted" : ""
+            };
         }
 
-        function getTailscaleIcon(status) {
-            if (status.includes("direct")) return "fa-circle-nodes";
-            if (status.includes("relay")) return "fa-network-wired";
-	    if (status.includes("online")) return "fa-tower-broadcast";
-            return "fa-circle-question";
+        function formatNetwork(n) {
+            return {
+                text: `${n.tailscale} / local: ${n.local}`,
+                icon: `${getTailscaleIcon(n.tailscale)} me-2`,
+                cls: ""
+            };
         }
 
-        function getLocalIcon(status) {
-            if (status) return "fa-house-signal";
-            return "fa-wifi";
+        function renderItem({ icon, title, value, time, valueCls = "" }) {
+            return `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>
+                        <i class="fa-solid ${icon} me-2"></i>
+                        ${title}
+                    </span>
+
+                    <span class="fw-bold ${valueCls}">
+                        ${value} ${time ? `<small class="text-muted ms-2">${time}</small>` : ""}
+                    </span>
+                </li>
+            `;
         }
 
         async function loadData() {
             const url = "{{ url_for('api.last_metrics') }}";
             const res = await fetch(url);
             const data = await res.json();
+
+            console.log(data);
 
             const cpuList = document.getElementById("cpu-list");
             const diskList = document.getElementById("disk-list");
@@ -63,85 +81,67 @@
 
             cpuList.innerHTML = "";
             diskList.innerHTML = "";
+            networkList.innerHTML = "";
 
-            // CPU
-            if (Object.keys(data.cpu).length === 0) {
-                cpuList.innerHTML = '<li class="list-group-item">No data</li>';
-            } else {
-                for (const core in data.cpu) {
-                    const info = data.cpu[core];
+            // ---------------- CPU ----------------
+            for (const core in data.cpu) {
+                const info = data.cpu[core];
+                const f = formatTemp(info.value);
 
-                    cpuList.innerHTML += `
-                        <li class="list-group-item d-flex justify-content-between">
-                            <span>
-                                <i class="fa-solid fa-microchip me-2"></i>
-                                ${core}
-                            </span>
-                            <span class="fw-bold">${info.value}°C at ${info.time}</span>
-                        </li>
-                    `;
-                }
+                cpuList.innerHTML += renderItem({
+                    icon: "fa-microchip",
+                    title: core,
+                    value: f.text,
+                    valueCls: f.cls,
+                    time: info.time
+                });
             }
 
-            // DISK
+            // ---------------- DISK ----------------
             for (const disk in data.disk) {
                 const info = data.disk[disk];
-                const { text, cls } = formatTemp(info.value);
+                const f = formatTemp(info.value);
 
-                diskList.innerHTML += `
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>
-                            <i class="fa-solid fa-hard-drive me-2"></i>
-                            ${disk}
-                        </span>
-                        <span class="fw-bold ${cls}">
-                            ${text} at ${info.time}
-                        </span>
-                    </li>
-                `;
+                diskList.innerHTML += renderItem({
+                    icon: "fa-hard-drive",
+                    title: disk,
+                    value: f.text,
+                    valueCls: f.cls,
+                    time: info.time
+                });
             }
 
-            // BATTERY
+            // ---------------- BATTERY ----------------
             if (!data.battery) {
                 battery.innerHTML = '<li class="list-group-item">No data</li>';
             } else {
                 const info = data.battery;
+                const f = formatBattery(info.value);
 
-                battery.innerHTML = `
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>
-                            <i class="fa-solid ${getBatteryIcon(info.value)} me-2"></i>
-                            Bateria
-                        </span>
-                        <span class="fw-bold">${info.value ?? "?"}% at ${info.time ?? "-"}</span>
-                    </li>
-                `;
+                battery.innerHTML = renderItem({
+                    icon: f.icon,
+                    title: "Bateria",
+                    value: f.text,
+                    valueCls: f.cls,
+                    time: info.time
+                });
             }
 
-            // rede
-            networkList.innerHTML = '';
-
+            // ---------------- NETWORK ----------------
             for (const ip in data.network) {
                 const n = data.network[ip];
+                const f = formatNetwork(n);
 
-                networkList.innerHTML += `
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>
-                            <i class="fa-solid ${getTailscaleIcon(n.tailscale)} me-2"></i>
-                            ${n.name} (${ip})
-                        </span>
-
-                        <span class="fw-bold">
-                            <i class="fa-solid ${getLocalIcon(n.local)} me-1"></i>
-                            ${n.tailscale} / local: ${n.local}
-                            <small class="text-muted ms-2">${n.time ?? "-"}</small>
-                        </span>
-                    </li>
-                `;
+                networkList.innerHTML += renderItem({
+                    icon: getTailscaleIcon(n.tailscale),
+                    title: `${n.name} (${ip})`,
+                    value: f.text,
+                    time: n.time
+                });
             }
         }
 
-        // carrega na primeira vez
+        // primeira carga
         loadData();
 
         // atualiza a cada 60s
