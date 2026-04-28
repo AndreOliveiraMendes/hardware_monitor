@@ -34,6 +34,16 @@
             return { text: `${value}°C`, cls: "text-success" };
         }
 
+        function getBatteryIcon(value) {
+            if (value >= 80) return "fa-battery-full";
+            if (value >= 60) return "fa-battery-three-quarters";
+            if (value >= 40) return "fa-battery-half";
+            if (value >= 20) return "fa-battery-quarter";
+            return "fa-battery-empty";
+
+
+        }
+
         function formatBattery(value) {
             const icon = getBatteryIcon(value);
 
@@ -42,6 +52,13 @@
                 icon,
                 cls: value == null ? "text-muted" : ""
             };
+        }
+
+        function getTailscaleIcon(status) {
+            if (status.includes("direct")) return "fa-circle-nodes";
+            if (status.includes("relay")) return "fa-network-wired";
+            if (status.includes("online")) return "fa-tower-broadcast";
+                return "fa-circle-question";
         }
 
         function formatNetwork(n) {
@@ -71,8 +88,6 @@
             const url = "{{ url_for('api.last_metrics') }}";
             const res = await fetch(url);
             const data = await res.json();
-
-            console.log(data);
 
             const cpuList = document.getElementById("cpu-list");
             const diskList = document.getElementById("disk-list");
