@@ -251,7 +251,7 @@ def get_daily_temperature_picks(device_type=None, name=None, page=0, per_page=10
         "has_prev": page > 0
     }
     
-def get_temperature_series(device_type=None, name=None, start=None, end=None, page=0):
+def get_temperature_series(device_type=None, name=None, start=None, end=None, page=0, per_page=501):
     query_sql = """
         SELECT datetime(timestamp, 'localtime'), device_type, name, value
         FROM metrics
@@ -281,7 +281,7 @@ def get_temperature_series(device_type=None, name=None, start=None, end=None, pa
     query_sql += " ORDER BY timestamp LIMIT 500"
     
     if page:
-        query_sql += " OFFSET ?"
-        params.append(500 * page)
+        query_sql += f" OFFSET {per_page}"
+        params.append(page * per_page)
 
     return query(query_sql, params)
