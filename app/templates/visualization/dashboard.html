@@ -44,6 +44,8 @@
         const form = document.querySelector("form");
         const url = "{{ url_for('api.all_metrics') }}";
         const url_filters = "{{ url_for('api.filters') }}";
+        const selected = {{ selected|tojson }};
+        let first = true;
 
         function formatInfo(params) {
             const start = params.get("start");
@@ -177,6 +179,19 @@
 
         async function loadFilters() {
             const params = new URLSearchParams(new FormData(form));
+            if (first) {
+                if (selected['device_type'])
+                    params.set("device_type", selected['device_type']);
+                
+                if (selected['name'])
+                    params.set("name", selected['name']);
+
+                first = false;
+            } else {
+                selected['device_type'] = params.get('device_type');
+                selected['name'] = params.get('name');
+            }
+            params.set("info_type", "temperature");
             const res = await fetch(url_filters + "?" + params.toString());
             const data = await res.json();
 

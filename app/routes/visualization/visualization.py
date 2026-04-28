@@ -14,7 +14,15 @@ def latest():
 
 @bp.route("/dashboard")
 def dashboard():
-    return render_template("visualization/dashboard.html")
+    device_type = request.args.get("device_type")
+    name = request.args.get("name")
+    selected = {
+        "device_type": device_type,
+        "name": name
+    }
+    return render_template("visualization/dashboard.html",
+        selected = selected
+    )
 
 @bp.route("/grafico-temperatura")
 def grafico_temperatura():
