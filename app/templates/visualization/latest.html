@@ -24,6 +24,13 @@
 {% endblock content %}
 {% block script %}
     <script>
+        function formatTemp(value) {
+            if (value == null) return { text: "—", cls: "text-muted" };
+            if (value > 60) return { text: `${value}°C`, cls: "text-danger" };
+            if (value > 45) return { text: `${value}°C`, cls: "text-warning" };
+            return { text: `${value}°C`, cls: "text-success" };
+        }
+
         function getBatteryIcon(value) {
             if (value >= 80) return "fa-battery-full";
             if (value >= 60) return "fa-battery-three-quarters";
@@ -77,22 +84,21 @@
             }
 
             // DISK
-            if (Object.keys(data.disk).length === 0) {
-                diskList.innerHTML = '<li class="list-group-item">No data</li>';
-            } else {
-                for (const disk in data.disk) {
-                    const info = data.disk[disk];
+            for (const disk in data.disk) {
+                const info = data.disk[disk];
+                const { text, cls } = formatTemp(info.value);
 
-                    diskList.innerHTML += `
-                        <li class="list-group-item d-flex justify-content-between">
-                            <span>
-                                <i class="fa-solid fa-hard-drive me-2"></i>
-                                ${disk}
-                            </span>
-                            <span class="fw-bold">${info.value}°C at ${info.time}</span>
-                        </li>
-                    `;
-                }
+                diskList.innerHTML += `
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>
+                            <i class="fa-solid fa-hard-drive me-2"></i>
+                            ${disk}
+                        </span>
+                        <span class="fw-bold ${cls}">
+                            ${text} at ${info.time}
+                        </span>
+                    </li>
+                `;
             }
 
             // BATTERY

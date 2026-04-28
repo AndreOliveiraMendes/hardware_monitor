@@ -196,7 +196,7 @@ def get_filters(info_type, device_type):
 def get_daily_temperature_picks(device_type=None, name=None, page=0, per_page=100):
     base_query = """
         FROM metrics
-        WHERE type = 'temperature'
+        WHERE type = 'temperature' and value IS NOT NULL
     """
 
     params = []
@@ -255,7 +255,7 @@ def get_temperature_series(device_type=None, name=None, start=None, end=None, pa
     query_sql = """
         SELECT datetime(timestamp, 'localtime'), device_type, name, value
         FROM metrics
-        WHERE type = 'temperature'
+        WHERE type = 'temperature' and value IS NOT NULL
     """
 
     params = []
