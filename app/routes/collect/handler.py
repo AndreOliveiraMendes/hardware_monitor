@@ -11,23 +11,27 @@ def update_score(host_ip, device_type, name, temp):
         score, level = 0, "???"
     else:
         score, level = rows[0]
-    if temp < 70:
-        score = max(0, score - 2)
-    elif temp < 75:
-        score += 1
-    elif temp < 80:
-        score += 2
-    elif temp < 90:
-        score += 3
-    else:
-        score += 5
         
-    if score >= 30:
-        new_level = 'critical'
-    elif score >= 15:
-        new_level = 'warning'
-    else:
-        new_level = 'ok'
+    try:
+        if temp < 70:
+            score = max(0, score - 2)
+        elif temp < 75:
+            score += 1
+        elif temp < 80:
+            score += 2
+        elif temp < 90:
+            score += 3
+        else:
+            score += 5
+            
+        if score >= 30:
+            new_level = 'critical'
+        elif score >= 15:
+            new_level = 'warning'
+        else:
+            new_level = 'ok'
+    except (ValueError, TypeError):
+        score, new_level = -1, 'no temp'
         
     # TODO (logica entre level e new_level)
     
