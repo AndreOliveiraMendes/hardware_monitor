@@ -93,6 +93,33 @@
                 });
             }
 
+            const MAX_GAP = 3 * 60 * 1000; // 3 minutos em ms
+
+            for (const key in grouped) {
+                const sorted = grouped[key].sort((a, b) => new Date(a.x) - new Date(b.x));
+
+                const withGaps = [];
+
+                for (let i = 0; i < sorted.length; i++) {
+                    if (i > 0) {
+                        const prev = new Date(sorted[i - 1].x).getTime();
+                        const curr = new Date(sorted[i].x).getTime();
+
+                        if (curr - prev > MAX_GAP) {
+                            // 🔥 insere quebra na linha
+                            withGaps.push({
+                                x: new Date(prev + 1), // ponto logo após o anterior
+                                y: null
+                            });
+                        }
+                    }
+
+                    withGaps.push(sorted[i]);
+                }
+
+                grouped[key] = withGaps;
+            }
+
             // datasets
             const datasets = [];
             let i = 0;
@@ -106,7 +133,8 @@
                     borderColor: getColor(i),
                     backgroundColor: getColor(i),
                     pointRadius: 0,
-                    pointHoverRadius: 5
+                    pointHoverRadius: 5,
+                    spanGaps: false
                 });
                 i++;
             }
