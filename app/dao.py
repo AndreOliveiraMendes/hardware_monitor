@@ -276,7 +276,7 @@ def get_daily_temperature_picks(device_type=None, name=None, page=0, per_page=10
         "has_prev": page > 0
     }
     
-def get_temperature_series(device_type=None, name=None, start=None, end=None, page=0, per_page=501):
+def get_temperature_series(device_type=None, name=None, start=None, end=None, page=0, per_page=420):
     query_sql = """
         SELECT datetime(timestamp, 'localtime'), host_name, host_ip, device_type, name, value
         FROM metrics
