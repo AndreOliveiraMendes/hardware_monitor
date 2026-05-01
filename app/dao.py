@@ -50,30 +50,54 @@ def get_latest_metrics():
 
         cur.execute("""
             SELECT type, datetime(timestamp, 'localtime') as timestamp,
-                   device_type, name, value, meta
+                   host_name, host_ip, device_type, name, value, meta
             FROM metrics
             WHERE id IN (
                 SELECT MAX(id)
                 FROM metrics
-                GROUP BY device_type, name
+                GROUP BY device_type, host_ip, name
             )
         """)
 
         rows = cur.fetchall()
 
-    data = {"cpu": {}, "disk": {}, "battery": None, "network": {}}
+    data = {"cpu": {}, "disk": {}, "battery": {}, "network": {}}
 
-    for info_type, time, device_type, name, value, meta in rows:
+    for info_type, time, hn, hip, device_type, name, value, meta in rows:
+
+        # garante host
+        for key in ["cpu", "disk", "battery", "network"]:
+            if key != "battery":
+                data[key].setdefault(hip, {})
+
         if info_type == "temperature":
-            if device_type.lower() == "cpu":
-                data["cpu"][name] = {"value":value, "time":time}
-            elif device_type.lower() == "disk":
-                data["disk"][name] = {"value":value, "time":time}
+            dtype = device_type.lower()
+
+            if dtype in ["cpu", "disk"]:
+                # 👇 agora preserva "name" (core0, core1, sda1, etc)
+                data[dtype][hip][name] = {
+                    "hostname": hn,
+                    "value": value,
+                    "time": time
+                }
+
         elif info_type == "battery":
-            data["battery"] = {"value":value, "time":time}
+            data["battery"][hip] = {
+                "hostname": hn,
+                "value": value,
+                "time": time
+            }
+
         elif info_type == "network":
-            meta_dict = json.loads(meta)
-            data["network"][value] = {"name":name, "tailscale":meta_dict["tailscale"], "local":meta_dict["local"], "time":time}
+            meta_dict = json.loads(meta or "{}")
+
+            data["network"][hip][value] = {
+                "hostname": hn,
+                "name": name,
+                "tailscale": meta_dict.get("tailscale"),
+                "local": meta_dict.get("local"),
+                "time": time
+            }
 
     return data
 
@@ -127,7 +151,7 @@ def get_metrics(start, end, tipo_info, tipo_temp, name, page=0, per_page=100):
 
     # dados paginados
     data_sql = f"""
-        SELECT datetime(timestamp, 'localtime'), type, device_type, name, value, meta
+        SELECT datetime(timestamp, 'localtime'), host_name, host_ip, type, device_type, name, value, meta
         {base_query}
         ORDER BY timestamp DESC
         LIMIT ? OFFSET ?

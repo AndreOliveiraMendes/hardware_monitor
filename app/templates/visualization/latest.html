@@ -27,25 +27,24 @@
 {% endblock content %}
 {% block script %}
     <script>
-        const temp_levels = {
-            cpu: [
-                { max: 35, cls: "text-success" },
-                { max: 50, cls: "text-info" },
-                { max: 60, cls: "text-primary" },
-                { max: 70, cls: "text-warning" },
-                { max: 80, cls: "text-orange" },
-                { max: 90, cls: "text-danger" },
-                { max: Infinity, cls: "text-dark" }
-            ],
-
-            disk: [
-                { max: 35, cls: "text-success" },
-                { max: 55, cls: "text-warning" },
-                { max: Infinity, cls: "text-danger" }
-            ]
-        };
-
         function formatTemp(value, type) {
+            const temp_levels = {
+                cpu: [
+                    { max: 35, cls: "text-success" },
+                    { max: 50, cls: "text-info" },
+                    { max: 60, cls: "text-primary" },
+                    { max: 70, cls: "text-warning" },
+                    { max: 80, cls: "text-orange" },
+                    { max: 90, cls: "text-danger" },
+                    { max: Infinity, cls: "text-dark" }
+                ],
+                disk: [
+                    { max: 35, cls: "text-success" },
+                    { max: 55, cls: "text-warning" },
+                    { max: Infinity, cls: "text-danger" }
+                ]
+            };
+
             if (value == null) return { text: "—", cls: "text-muted" };
 
             const levels = temp_levels[type];
@@ -78,24 +77,15 @@
         }
 
         function getTailscaleIcon(status) {
+            if (!status) return "fa-circle-question";
             if (status.includes("direct")) return "fa-circle-nodes";
             if (status.includes("relay")) return "fa-network-wired";
             if (status.includes("online")) return "fa-tower-broadcast";
-                return "fa-circle-question";
+            return "fa-circle-question";
         }
 
         function localIcon(local){
-            if(local) return "fa-house-signal"
-            return "fa-wifi"
-        }
-
-        function formatNetwork(n) {
-            return {
-                text: `${n.tailscale}`,
-                icon: `${getTailscaleIcon(n.tailscale)} me-2`,
-                cls: "",
-                iconValue: `${localIcon(n.local)}`
-            };
+            return local ? "fa-house-signal" : "fa-wifi";
         }
 
         function renderItem({icon, title, value, time, valueCls = "", iconValue = "" }) {
@@ -107,7 +97,9 @@
                     </span>
 
                     <span class="fw-bold ${valueCls}">
-                        ${value} ${iconValue ? `<i class="fa-solid ${iconValue} me-2"></i>` : ""} ${time ?`<small class="text-muted ms-2">${time}</small>` : ""}
+                        ${value}
+                        ${iconValue ? `<i class="fa-solid ${iconValue} me-2"></i>` : ""}
+                        ${time ? `<small class="text-muted ms-2">${time}</small>` : ""}
                     </span>
                 </li>
             `;
@@ -120,76 +112,87 @@
 
             const cpuList = document.getElementById("cpu-list");
             const diskList = document.getElementById("disk-list");
-            const battery = document.getElementById("battery");
+            const batteryList = document.getElementById("battery");
             const networkList = document.getElementById("network-list");
 
             cpuList.innerHTML = "";
             diskList.innerHTML = "";
+            batteryList.innerHTML = "";
             networkList.innerHTML = "";
 
             // ---------------- CPU ----------------
-            for (const core in data.cpu) {
-                const info = data.cpu[core];
-                const f = formatTemp(info.value, 'cpu');
+            for (const ip in data.cpu || {}) {
+                const cores = data.cpu[ip];
 
-                cpuList.innerHTML += renderItem({
-                    icon: "fa-microchip",
-                    title: core,
-                    value: f.text,
-                    valueCls: f.cls,
-                    time: info.time
-                });
+                for (const core in cores) {
+                    const info = cores[core];
+                    const f = formatTemp(info.value, 'cpu');
+
+                    cpuList.innerHTML += renderItem({
+                        icon: "fa-microchip",
+                        title: `${info.hostname} - ${core} (${ip})`,
+                        value: f.text,
+                        valueCls: f.cls,
+                        time: info.time
+                    });
+                }
             }
 
             // ---------------- DISK ----------------
-            for (const disk in data.disk) {
-                const info = data.disk[disk];
-                const f = formatTemp(info.value, 'disk');
+            for (const ip in data.disk || {}) {
+                const disks = data.disk[ip];
 
-                diskList.innerHTML += renderItem({
-                    icon: "fa-hard-drive",
-                    title: disk,
-                    value: f.text,
-                    valueCls: f.cls,
-                    time: info.time
-                });
+                for (const disk in disks) {
+                    const info = disks[disk];
+                    const f = formatTemp(info.value, 'disk');
+
+                    diskList.innerHTML += renderItem({
+                        icon: "fa-hard-drive",
+                        title: `${info.hostname} - ${disk} (${ip})`,
+                        value: f.text,
+                        valueCls: f.cls,
+                        time: info.time
+                    });
+                }
             }
 
             // ---------------- BATTERY ----------------
-            if (!data.battery) {
-                battery.innerHTML = '<li class="list-group-item">No data</li>';
+            if (!data.battery || Object.keys(data.battery).length === 0) {
+                batteryList.innerHTML = '<li class="list-group-item">No data</li>';
             } else {
-                const info = data.battery;
-                const f = formatBattery(info.value);
+                for (const ip in data.battery) {
+                    const info = data.battery[ip];
+                    const f = formatBattery(info.value);
 
-                battery.innerHTML = renderItem({
-                    icon: f.icon,
-                    title: "Bateria",
-                    value: f.text,
-                    valueCls: f.cls,
-                    time: info.time
-                });
+                    batteryList.innerHTML += renderItem({
+                        icon: f.icon,
+                        title: `${info.hostname} (${ip})`,
+                        value: f.text,
+                        valueCls: f.cls,
+                        time: info.time
+                    });
+                }
             }
 
             // ---------------- NETWORK ----------------
-            for (const ip in data.network) {
-                const n = data.network[ip];
-                const f = formatNetwork(n);
+            for (const ip in data.network || {}) {
+                const interfaces = data.network[ip];
 
-                networkList.innerHTML += renderItem({
-                    icon: getTailscaleIcon(n.tailscale),
-                    title: `${n.name} (${ip})`,
-                    value: f.text,
-                    time: n.time,
-                    iconValue: f.iconValue
-                });
+                for (const key in interfaces) {
+                    const n = interfaces[key];
+
+                    networkList.innerHTML += renderItem({
+                        icon: getTailscaleIcon(n.tailscale),
+                        title: `${n.hostname} - ${n.name} (${ip})`,
+                        value: n.tailscale,
+                        time: n.time,
+                        iconValue: localIcon(n.local)
+                    });
+                }
             }
         }
 
-        // primeira carga
         loadData();
-
-        // atualiza a cada 60s
         setInterval(loadData, 60000);
     </script>
 {% endblock script %}

@@ -116,13 +116,13 @@
             let index = page * result.per_page + 1;
 
             for (const item of data) {
-                const { timestamp, infotype, device_type, name, value } = item;
+                const { timestamp, hostname, hostip, infotype, device_type, name, value } = item;
 
                 let unit = infotype === "temperature" ? "°C"
                         : infotype === "battery" ? "%"
                         : "";
 
-                let label = `[${index}] ${timestamp}`;
+                let label = `[${index}] ${timestamp} - ${hostname} (${hostip})`;
                 if (device_type) label += ` - ${device_type}`;
                 if (name) label += ` - ${name}`;
 
@@ -137,7 +137,7 @@
                     <li class="list-group-item d-flex justify-content-between">
                         <span title="${tooltip}">
                             <i class="fa-solid ${getInfoIcon(infotype)} ${getInfoColor(infotype)} me-2"></i>
-                            ${label}
+                             ${label}
                         </span>
                         <span class="fw-bold">${value ?? "?"}${unit}</span>
                     </li>

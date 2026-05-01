@@ -179,11 +179,13 @@ def all_metrics():
     for row in result["data"]:
         data.append({
             "timestamp": row[0],
-            "infotype": row[1],
-            "device_type": row[2],
-            "name": row[3],
-            "value": row[4],
-            "meta": row[5]
+            "hostname": row[1],
+            "hostip": row[2],
+            "infotype": row[3],
+            "device_type": row[4],
+            "name": row[5],
+            "value": row[6],
+            "meta": row[7]
         })
 
     return jsonify({
