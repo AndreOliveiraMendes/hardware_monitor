@@ -25,9 +25,9 @@
             <canvas id="tempChart"></canvas>
         </div>
         <ul class="list-group list-group-flush">
-            {% for day, dtype, name, min_temp, max_temp, avg in data %}
+            {% for day, hip, dtype, name, min_temp, max_temp, avg in data %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span class="fw-semibold">[{{ loop.index + pagination.page * pagination.per_page }}] {{ day }} | {{ dtype }} | {{ name }}</span>
+                    <span class="fw-semibold">[{{ loop.index + pagination.page * pagination.per_page }}] {{ day }} | {{ hip }} | {{ dtype }} | {{ name }}</span>
                     <span>
                         <span class="text-primary fw-bold">min: {{ min_temp }}°C</span>
                         |
@@ -142,8 +142,8 @@
         const grouped = {};
 
         for (const row of rawData) {
-            const [day, dtype, name, min, max, avg] = row;
-            const key = `${dtype}-${name}`;
+            const [day, hip, dtype, name, min, max, avg] = row;
+            const key = `${hip}-${dtype}-${name}`;
 
             if (!grouped[key]) grouped[key] = [];
 

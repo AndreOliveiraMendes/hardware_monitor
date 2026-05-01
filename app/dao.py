@@ -233,14 +233,14 @@ def get_daily_temperature_picks(device_type=None, name=None, page=0, per_page=10
         base_query += " AND name = ?"
         params.append(name)
 
-    group_by = " GROUP BY day, device_type, name"
+    group_by = " GROUP BY day, host_ip, device_type, name"
 
     # total
     count_query = f"""
         SELECT COUNT(*) FROM (
             SELECT 1
             {base_query}
-            GROUP BY DATE(datetime(timestamp, 'localtime')), device_type, name
+            GROUP BY DATE(datetime(timestamp, 'localtime')), host_ip, device_type, name
         )
     """
 
@@ -252,13 +252,14 @@ def get_daily_temperature_picks(device_type=None, name=None, page=0, per_page=10
         data_query = f"""
             SELECT
                 DATE(datetime(timestamp, 'localtime')) as day,
+                host_ip,
                 device_type,
                 name,
                 MIN(value),
                 MAX(value),
                 AVG(value)
             {base_query}
-            GROUP BY day, device_type, name
+            GROUP BY day, host_ip, device_type, name
             ORDER BY day DESC
             LIMIT ? OFFSET ?
         """
@@ -277,7 +278,7 @@ def get_daily_temperature_picks(device_type=None, name=None, page=0, per_page=10
     
 def get_temperature_series(device_type=None, name=None, start=None, end=None, page=0, per_page=501):
     query_sql = """
-        SELECT datetime(timestamp, 'localtime'), device_type, name, value
+        SELECT datetime(timestamp, 'localtime'), host_name, host_ip, device_type, name, value
         FROM metrics
         WHERE type = 'temperature' and value IS NOT NULL
     """

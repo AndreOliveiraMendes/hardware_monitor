@@ -244,9 +244,11 @@ def temperature_series():
     data = [
         {
             "timestamp": r[0],
-            "device_type": r[1],
-            "name": r[2],
-            "value": r[3],
+            "hostname": r[1],
+            "hostip": r[2],
+            "device_type": r[3],
+            "name": r[4],
+            "value": r[5],
         }
         for r in rows
     ]
