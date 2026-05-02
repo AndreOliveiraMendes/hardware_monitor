@@ -41,6 +41,12 @@ def menu():
                         "example": "temperature"        
                     },
                     {
+                        "name": "host_ip",
+                        "type": "string",
+                        "required": False,
+                        "example": "17.70.13.0"  
+                    },
+                    {
                         "name": "device_type",
                         "type": "string",
                         "required": False,
@@ -72,7 +78,7 @@ def menu():
                         "example": "temperature"
                     },
                     {
-                        "name": "hostip",
+                        "name": "host_ip",
                         "type": "string",
                         "required": False,
                         "example": "17.70.13.0"  
@@ -135,6 +141,12 @@ def menu():
                         "example": "2026-04-18T23:59"
                     },
                     {
+                        "name": "host_ip",
+                        "type": "string",
+                        "required": False,
+                        "example": "17.70.13.0"  
+                    },
+                    {
                         "name": "device_type",
                         "type": "string",
                         "required": False,
@@ -175,18 +187,19 @@ def all_metrics():
 
     start = request.args.get("start")
     end = request.args.get("end")
-    tipo_info = request.args.get("info_type")
-    tipo_temp = request.args.get("device_type")
+    host_ip = request.args.get("host_ip")
+    tipo_informacao = request.args.get("info_type")
+    tipo_dispositivo = request.args.get("device_type")
     name = request.args.get("name")
 
-    result = get_metrics(start, end, tipo_info, tipo_temp, name, page)
+    result = get_metrics(start, end, host_ip, tipo_informacao, tipo_dispositivo, name, page)
 
     data = []
     for row in result["data"]:
         data.append({
             "timestamp": row[0],
             "hostname": row[1],
-            "hostip": row[2],
+            "host_ip": row[2],
             "infotype": row[3],
             "device_type": row[4],
             "name": row[5],
@@ -206,14 +219,14 @@ def all_metrics():
 @bp.route("/filters")
 def filters():
     info_type = request.args.get("info_type")
-    hostip = request.args.get("hostip")
+    host_ip = request.args.get("host_ip")
     device_type = request.args.get("device_type")
 
-    info_types, hostips, device_types, names = get_filters(info_type, hostip, device_type)
+    info_types, host_ips, device_types, names = get_filters(info_type, host_ip, device_type)
 
     return jsonify({
         "info_types": info_types,
-        "hostips": hostips,
+        "host_ips": host_ips,
         "device_types": device_types,
         "names": names
     })
@@ -253,7 +266,7 @@ def temperature_series():
         {
             "timestamp": r[0],
             "hostname": r[1],
-            "hostip": r[2],
+            "host_ip": r[2],
             "device_type": r[3],
             "name": r[4],
             "value": r[5],

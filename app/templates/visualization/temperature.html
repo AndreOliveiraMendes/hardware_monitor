@@ -85,7 +85,7 @@
             // agrupar por device_type + name
             const grouped = {};
             for (const d of rawData) {
-                const key = `${d.hostip}-${d.device_type}-${d.name}`;
+                const key = `${d.host_ip}-${d.device_type}-${d.name}`;
                 if (!grouped[key]) grouped[key] = [];
                 grouped[key].push({
                     x: d.timestamp,

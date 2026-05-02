@@ -20,6 +20,10 @@
             <select name="info_type" class="form-control"></select>
         </div>
         <div class="col-auto">
+            <label>Host ip</label>
+            <select name="host_ip" class="form-control"></select>
+        </div>
+        <div class="col-auto">
             <label>Tipo</label>
             <select name="device_type" class="form-control"></select>
         </div>
@@ -116,13 +120,13 @@
             let index = page * result.per_page + 1;
 
             for (const item of data) {
-                const { timestamp, hostname, hostip, infotype, device_type, name, value } = item;
+                const { timestamp, hostname, host_ip, infotype, device_type, name, value } = item;
 
                 let unit = infotype === "temperature" ? "°C"
                         : infotype === "battery" ? "%"
                         : "";
 
-                let label = `[${index}] ${timestamp} - ${hostname} (${hostip})`;
+                let label = `[${index}] ${timestamp} - ${hostname} (${host_ip})`;
                 if (device_type) label += ` - ${device_type}`;
                 if (name) label += ` - ${name}`;
 
@@ -181,6 +185,9 @@
             const params = new URLSearchParams(new FormData(form));
 
             if (first) {
+                if (selected['host_ip'])
+                    params.set("host_ip", selected['host_ip']);
+
                 if (selected['device_type'])
                     params.set("device_type", selected['device_type']);
                 
@@ -192,13 +199,16 @@
 
                 first = false;
             } else {
+                selected['host_ip'] = params.get('host_ip');
                 selected['device_type'] = params.get('device_type');
                 selected['name'] = params.get('name');
                 selected['info_type'] = params.get('info_type');
             }
             const res = await fetch(url_filters + "?" + params.toString());
             const data = await res.json();
+            console.log()
 
+            fillSelect("host_ip", data.host_ips);
             fillSelect("info_type", data.info_types);
             fillSelect("device_type", data.device_types);
             fillSelect("name", data.names);
@@ -235,10 +245,18 @@
 
         document.querySelector("select[name='info_type']")
             .addEventListener("change", () => {
+                document.querySelector("select[name='host_ip']").value = "";
                 document.querySelector("select[name='device_type']").value = "";
                 document.querySelector("select[name='name']").value = "";
                 loadFilters();
             });
+
+        document.querySelector("select[name='host_ip']")
+                    .addEventListener("change", () => {
+                        document.querySelector("select[name='device_type']").value = "";
+                        document.querySelector("select[name='name']").value = "";
+                        loadFilters();
+                    });
 
         document.querySelector("select[name='device_type']")
             .addEventListener("change", () => {

@@ -101,7 +101,7 @@ def get_latest_metrics():
 
     return data
 
-def get_metrics(start, end, tipo_info, tipo_temp, name, page=0, per_page=100):
+def get_metrics(start, end, host_ip, tipo_info, tipo_disp, name, page=0, per_page=100):
     base_query = """
         FROM metrics
     """
@@ -123,24 +123,21 @@ def get_metrics(start, end, tipo_info, tipo_temp, name, page=0, per_page=100):
         conditions.append("datetime(timestamp, 'localtime') <= ?")
         params.append(end)
 
-    if tipo_info == "battery":
+    if host_ip:
+        conditions.append("host_ip = ?")
+        params.append(host_ip)
+        
+    if tipo_info:
         conditions.append("type = ?")
         params.append(tipo_info)
-    elif tipo_info == "temperature":
-        conditions.append("type = ?")
-        params.append(tipo_info)
-        if tipo_temp:
-            conditions.append("device_type = ?")
-            params.append(tipo_temp)
-        if name:
-            conditions.append("name = ?")
-            params.append(name)
-    elif tipo_info == "network":
-        conditions.append("type = ?")
-        params.append(tipo_info)
-        if name:
-            conditions.append("name = ?")
-            params.append(name)
+        
+    if tipo_disp:
+        conditions.append("device_type = ?")
+        params.append(tipo_disp)
+        
+    if name:
+        conditions.append("name = ?")
+        params.append(name)
 
     if conditions:
         base_query += " WHERE " + " AND ".join(conditions)
@@ -169,7 +166,7 @@ def get_metrics(start, end, tipo_info, tipo_temp, name, page=0, per_page=100):
         "has_prev": page > 0
     }
 
-def get_filters(info_type, hostip, device_type):
+def get_filters(info_type, host_ip, device_type):
     with get_conn() as conn:
         cur = conn.cursor()
 
@@ -188,11 +185,11 @@ def get_filters(info_type, hostip, device_type):
             base_sql += " WHERE " + " AND ".join(filters)
         
         cur.execute(base_sql, params)
-        hostips = [r[0] for r in cur.fetchall()]
+        host_ips = [r[0] for r in cur.fetchall()]
         
-        if hostip:
+        if host_ip:
             filters.append("host_ip = ?")
-            params.append(hostip)
+            params.append(host_ip)
             
         base_sql = "SELECT DISTINCT device_type FROM metrics"
         if filters:
@@ -210,9 +207,9 @@ def get_filters(info_type, hostip, device_type):
             base_sql += " WHERE " + " AND ".join(filters)
         
         cur.execute(base_sql, params)
-        names = [r[0] for r in cur.fetchall()]
+        names = [r[0] for r in cur.fetchall() if r[0] != None]
 
-        return info_types, hostips, device_types, names
+        return info_types, host_ips, device_types, names
 
 def get_daily_temperature_picks(device_type=None, name=None, page=0, per_page=100):
     base_query = """

@@ -14,10 +14,12 @@ def latest():
 
 @bp.route("/dashboard")
 def dashboard():
+    host_ip = request.args.get("host_ip")
     info_type = request.args.get("info_type")
     device_type = request.args.get("device_type")
     name = request.args.get("name")
     selected = {
+        "host_ip": host_ip,
         "info_type": info_type,
         "device_type": device_type,
         "name": name
