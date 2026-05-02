@@ -16,6 +16,10 @@
                    value="{{ request.args.get('end') }}">
         </div>
         <div class="col-auto">
+            <label>Host ip</label>
+            <select name="host_ip" class="form-control"></select>
+        </div>
+        <div class="col-auto">
             <label>Tipo</label>
             <select name="device_type" class="form-control"></select>
         </div>
@@ -310,6 +314,9 @@
             const params = new URLSearchParams(new FormData(form));
             params.set("info_type", "temperature");
             if (first) {
+                if (selected['host_ip'])
+                    params.set("host_ip", selected['host_ip']);
+
                 if (selected['device_type'])
                     params.set("device_type", selected['device_type']);
                 
@@ -318,6 +325,7 @@
 
                 first = false;
             } else {
+                selected['host_ip'] = params.get('host_ip');
                 selected['device_type'] = params.get('device_type');
                 selected['name'] = params.get('name');
             }
@@ -325,6 +333,7 @@
             const res = await fetch(url_filters + "?" + params.toString());
             const data = await res.json();
 
+            fillSelect("host_ip", data.host_ips);
             fillSelect("device_type", data.device_types);
             fillSelect("name", data.names);
         }
@@ -382,6 +391,13 @@
         }
 
         // dependência entre selects (igual metrics)
+        document.querySelector("select[name='host_ip']")
+                    .addEventListener("change", () => {
+                        document.querySelector("select[name='device_type']").value = "";
+                        document.querySelector("select[name='name']").value = "";
+                        loadFilters();
+                    });
+
         document.querySelector("select[name='device_type']")
             .addEventListener("change", () => {
                 document.querySelector("select[name='name']").value = "";

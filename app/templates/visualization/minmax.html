@@ -3,6 +3,10 @@
     <h2 class="mb-4">Extremos de Temperatura por Dia</h2>
     <form method="get" class="row g-3 mb-4">
         <div class="col-auto">
+            <label>Host ip</label>
+            <select name="host_ip" class="form-control"></select>
+        </div>
+        <div class="col-auto">
             <label>Tipo</label>
             <select name="device_type" class="form-control">
                 <option value="">Todos</option>
@@ -71,6 +75,9 @@
         async function loadFilters() {
             let params = new URLSearchParams(new FormData(form));
             if (first) {
+                if (selected['host_ip'])
+                    params.set("host_ip", selected['host_ip']);
+
                 if (selected['device_type'])
                     params.set("device_type", selected['device_type']);
                 
@@ -79,6 +86,7 @@
 
                 first = false;
             } else {
+                selected['host_ip'] = params.get('host_ip');
                 selected['device_type'] = params.get('device_type');
                 selected['name'] = params.get('name');
             }
@@ -87,6 +95,7 @@
             const res = await fetch(url_filters + "?" + params.toString());
             const data = await res.json();
 
+            fillSelect("host_ip", data.host_ips);
             fillSelect("device_type", data.device_types);
             fillSelect("name", data.names);
         }
@@ -107,6 +116,13 @@
                 `;
             }
         }
+
+        document.querySelector("select[name='host_ip']")
+                    .addEventListener("change", () => {
+                        document.querySelector("select[name='device_type']").value = "";
+                        document.querySelector("select[name='name']").value = "";
+                        loadFilters();
+                    });
 
         // quando mudar device_type → reseta name
         document.querySelector("select[name='device_type']")

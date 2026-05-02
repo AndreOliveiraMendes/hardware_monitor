@@ -30,9 +30,11 @@ def dashboard():
 
 @bp.route("/grafico-temperatura")
 def grafico_temperatura():
+    host_ip = request.args.get("host_ip")
     device_type = request.args.get("device_type")
     name = request.args.get("name")
     selected = {
+        "host_ip": host_ip,
         "device_type": device_type,
         "name": name
     }
@@ -42,6 +44,7 @@ def grafico_temperatura():
 
 @bp.route("/extremos")
 def min_max_temp():
+    host_ip = request.args.get("host_ip")
     device_type = request.args.get("device_type")
     name = request.args.get("name")
 
@@ -52,13 +55,14 @@ def min_max_temp():
 
     page = max(page, 0)
 
-    result = get_daily_temperature_picks(device_type, name, page)
+    result = get_daily_temperature_picks(host_ip, device_type, name, page)
 
     return render_template(
         "visualization/minmax.html",
         data=result["data"],
         pagination=result,
         selected={
+            "host_ip": host_ip,
             "device_type": device_type,
             "name": name
         }

@@ -211,13 +211,17 @@ def get_filters(info_type, host_ip, device_type):
 
         return info_types, host_ips, device_types, names
 
-def get_daily_temperature_picks(device_type=None, name=None, page=0, per_page=100):
+def get_daily_temperature_picks(host_ip = None, device_type=None, name=None, page=0, per_page=100):
     base_query = """
         FROM metrics
         WHERE type = 'temperature' and value IS NOT NULL
     """
 
     params = []
+    
+    if host_ip:
+        base_query += " AND host_ip = ?"
+        params.append(host_ip)
 
     if device_type:
         base_query += " AND device_type = ?"
@@ -270,7 +274,7 @@ def get_daily_temperature_picks(device_type=None, name=None, page=0, per_page=10
         "has_prev": page > 0
     }
     
-def get_temperature_series(device_type=None, name=None, start=None, end=None, page=0, per_page=420):
+def get_temperature_series(host_ip=None, device_type=None, name=None, start=None, end=None, page=0, per_page=420):
     query_sql = """
         SELECT datetime(timestamp, 'localtime'), host_name, host_ip, device_type, name, value
         FROM metrics
@@ -278,6 +282,10 @@ def get_temperature_series(device_type=None, name=None, start=None, end=None, pa
     """
 
     params = []
+    
+    if host_ip:
+        query_sql += " AND host_ip = ?"
+        params.append(host_ip)
 
     if device_type:
         query_sql += " AND device_type = ?"

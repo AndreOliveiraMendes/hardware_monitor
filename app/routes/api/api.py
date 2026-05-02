@@ -249,6 +249,7 @@ def get_ahscore():
 
 @bp.route("/temperature-series")
 def temperature_series():
+    host_ip = request.args.get("host_ip")
     device_type = request.args.get("device_type")
     name = request.args.get("name")
     start = request.args.get("start")
@@ -259,7 +260,7 @@ def temperature_series():
     except:
         page = 0
 
-    rows = get_temperature_series(device_type, name, start, end, page)
+    rows = get_temperature_series(host_ip, device_type, name, start, end, page)
 
     # transforma em dict (melhor pro frontend)
     data = [
