@@ -169,53 +169,50 @@ def get_metrics(start, end, tipo_info, tipo_temp, name, page=0, per_page=100):
         "has_prev": page > 0
     }
 
-def get_filters(info_type, device_type):
+def get_filters(info_type, hostip, device_type):
     with get_conn() as conn:
         cur = conn.cursor()
 
         cur.execute("SELECT DISTINCT type FROM metrics")
         info_types = [r[0] for r in cur.fetchall()]
+        
+        filters = []
+        params = []
+        
+        if info_type:
+            filters.append("type = ?")
+            params.append(info_type)
+            
+        base_sql = "SELECT DISTINCT host_ip FROM metrics"
+        if filters:
+            base_sql += " WHERE " + " AND ".join(filters)
+        
+        cur.execute(base_sql, params)
+        hostips = [r[0] for r in cur.fetchall()]
+        
+        if hostip:
+            filters.append("host_ip = ?")
+            params.append(hostip)
+            
+        base_sql = "SELECT DISTINCT device_type FROM metrics"
+        if filters:
+            base_sql += " WHERE " + " AND ".join(filters)
+            
+        cur.execute(base_sql, params)
+        device_types = [r[0] for r in cur.fetchall()]
+        
+        if device_type:
+            filters.append("device_type = ?")
+            params.append(device_type)
+            
+        base_sql = "SELECT DISTINCT name FROM metrics"
+        if filters:
+            base_sql += " WHERE " + " AND ".join(filters)
+        
+        cur.execute(base_sql, params)
+        names = [r[0] for r in cur.fetchall()]
 
-        device_types = []
-        if info_type == "temperature" or not info_type:
-            cur.execute("""
-                SELECT DISTINCT device_type
-                FROM metrics
-                WHERE type = 'temperature'
-            """)
-            device_types = [r[0] for r in cur.fetchall()]
-
-        names = []
-
-        if info_type == "temperature":
-            if device_type:
-                cur.execute("""
-                    SELECT DISTINCT name
-                    FROM metrics
-                    WHERE type = 'temperature'
-                    AND device_type = ?
-                """, (device_type,))
-            else:
-                cur.execute("""
-                    SELECT DISTINCT name
-                    FROM metrics
-                    WHERE type = 'temperature'
-                """)
-            names = [r[0] for r in cur.fetchall()]
-        elif info_type == "battery":
-            names = []
-        elif info_type == "network":
-            cur.execute("""
-                SELECT DISTINCT name
-                FROM metrics
-                WHERE type = 'network'
-            """)
-            names = [r[0] for r in cur.fetchall()]
-        else:
-            cur.execute("SELECT DISTINCT name FROM metrics WHERE name IS NOT NULL")
-            names = [r[0] for r in cur.fetchall()]
-
-        return info_types, device_types, names
+        return info_types, hostips, device_types, names
 
 def get_daily_temperature_picks(device_type=None, name=None, page=0, per_page=100):
     base_query = """

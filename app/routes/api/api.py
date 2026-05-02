@@ -72,6 +72,12 @@ def menu():
                         "example": "temperature"
                     },
                     {
+                        "name": "hostip",
+                        "type": "string",
+                        "required": False,
+                        "example": "17.70.13.0"  
+                    },
+                    {
                         "name": "device_type",
                         "type": "string",
                         "required": False,
@@ -200,12 +206,14 @@ def all_metrics():
 @bp.route("/filters")
 def filters():
     info_type = request.args.get("info_type")
+    hostip = request.args.get("hostip")
     device_type = request.args.get("device_type")
 
-    info_types, device_types, names = get_filters(info_type, device_type)
+    info_types, hostips, device_types, names = get_filters(info_type, hostip, device_type)
 
     return jsonify({
         "info_types": info_types,
+        "hostips": hostips,
         "device_types": device_types,
         "names": names
     })
