@@ -95,7 +95,7 @@ def get_latest_metrics():
                 "hostname": hn,
                 "name": name,
                 "tailscale": meta_dict.get("tailscale"),
-                "local": meta_dict.get("local"),
+                "local": meta_dict.get("self"),
                 "time": time
             }
 
