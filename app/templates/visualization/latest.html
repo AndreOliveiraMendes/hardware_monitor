@@ -78,9 +78,10 @@
 
         function getTailscaleIcon(status) {
             if (!status) return "fa-circle-question";
+            if (status.includes("self")) return "fa-server"
             if (status.includes("direct")) return "fa-circle-nodes";
             if (status.includes("relay")) return "fa-network-wired";
-            if (status.includes("online")) return "fa-tower-broadcast";
+            if (status.includes("online")) return "fa-signal";
             return "fa-circle-question";
         }
 
