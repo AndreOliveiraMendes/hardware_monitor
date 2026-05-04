@@ -21,10 +21,10 @@ services:
       - .:/app
 
     networks:
-      - shared_net
+      - dev
 
     restart: unless-stopped
 
 networks:
-  shared_net:
+  dev:
     external: true
