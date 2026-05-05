@@ -19,18 +19,28 @@ def test_notify():
     msg = request.args.get("msg", "teste de notificação")
 
     success = 0
-    msg = ""
+    rmsg = ""
     try:
         if to:
             send_mail(to, "Teste hardware_monitor", msg)
             success += 1
     except Exception as e:
-        msg += f"Failed to send email: {e}\n"
+        rmsg += f"Failed to send email: {e}\n"
         
     try:
         send_telegram(msg)
         success += 1
     except Exception as e:
-        msg += f"Failed to send Telegram message: {e}\n"
+        rmsg += f"Failed to send Telegram message: {e}\n"
 
-    return jsonify({"status": "ok", "success": success, "msg": msg})
+    if success == 0:
+        status = "error"
+        code = 500
+    elif success == 1:
+        status = "partial_success"
+        code = 207
+    else:
+        status = "success"
+        code = 200
+    
+    return jsonify({"status": status, "success": success, "msg": rmsg}), code
