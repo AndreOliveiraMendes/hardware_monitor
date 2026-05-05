@@ -27,22 +27,22 @@ def update_score(host_ip, device_type, name, temp):
             elif temp < 80:
                 score += 2
             elif temp < 90:
-                score += 5
+                score += 3
             else:
                 score += 5
         else:
             if temp < 35:
-                score = max(0, score - 1)
+                score = max(0, score - 2)
             elif temp < 40:
-                score += 1
+                score = max(0, score - 1)
             elif temp < 45:
-                score += 2
+                score += 1
             elif temp < 50:
-                score += 3
+                score += 2
             elif temp < 55:
-                score += 5
+                score += 3
             else:
-                score += 7
+                score += 5
 
         if score >= 30:
             new_level = 'critical'
