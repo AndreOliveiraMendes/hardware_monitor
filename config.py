@@ -11,3 +11,5 @@ DEBUG_MODE = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
+INTERNAL_TOKEN = os.getenv("INTERNAL_TOKEN")
