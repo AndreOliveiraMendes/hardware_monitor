@@ -25,7 +25,7 @@ def migrate(conn):
     version = get_db_version(conn)
     cur = conn.cursor()
 
-    while version < 3:
+    while version < 4:
         if version:
             print(f"Migrating to v{version + 1}...")
         else:
@@ -74,6 +74,43 @@ def migrate(conn):
 
             if not column_exists(conn, "metrics", "scope"):
                 cur.execute("ALTER TABLE metrics ADD COLUMN scope TEXT;")
+
+        # v4: indexes
+        elif version == 3:
+            # 🔥 principal: queries por tempo (time-series)
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_metrics_timestamp
+                ON metrics (timestamp DESC);
+            """)
+
+            # 🔥 filtro por host + tempo (muito comum)
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_metrics_host_time
+                ON metrics (host_ip, timestamp DESC);
+            """)
+
+            # 🔥 filtro por tipo (cpu, disk, etc)
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_metrics_type_time
+                ON metrics (type, timestamp DESC);
+            """)
+
+            # 🔥 filtro mais específico (device-level)
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_metrics_device
+                ON metrics (host_ip, device_type, name, timestamp DESC);
+            """)
+
+            # 🔥 state lookup (já tem PK, mas ajuda em queries parciais)
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_state_host
+                ON state (host_ip);
+            """)
+
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_state_level
+                ON state (level);
+            """)
 
         version += 1
         set_db_version(conn, version)
