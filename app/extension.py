@@ -12,7 +12,7 @@ def set_db_version(conn, version):
     cur = conn.cursor()
     cur.execute(f"PRAGMA user_version = {version};")
     
-def get_conn():
+def get_connection():
     return sqlite3.connect(DB_PATH)
 
 def column_exists(conn, table, column):
@@ -84,7 +84,7 @@ def init_db():
     if not os.path.exists(DB_PATH):
         os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
-    conn = get_conn()
+    conn = get_connection()
     
     # aplica migrations
     migrate(conn)

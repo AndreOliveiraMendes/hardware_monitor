@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 
 from app.db import execute, query
-from app.extension import get_conn
+from app.extension import get_connection
 
 
 def insert_metric(**kwargs):
@@ -24,7 +24,7 @@ def get_heat_score(host_ip, device_type, name):
     """, (host_ip, device_type, name))
 
 def get_all_heat_scores():
-    with get_conn() as conn:
+    with get_connection() as conn:
         cur = conn.cursor()
         cur.execute("""
             SELECT host_ip, device_type, name, heat_score, level,
@@ -45,7 +45,7 @@ def update_heat_score(host_ip, device_type, name, score, level):
     """, (host_ip, device_type, name, score, level))
     
 def get_latest_metrics():
-    with get_conn() as conn:
+    with get_connection() as conn:
         cur = conn.cursor()
 
         cur.execute("""
@@ -167,7 +167,7 @@ def get_metrics(start, end, host_ip, tipo_info, tipo_disp, name, page=0, per_pag
     }
 
 def get_filters(info_type, host_ip, device_type):
-    with get_conn() as conn:
+    with get_connection() as conn:
         cur = conn.cursor()
 
         cur.execute("SELECT DISTINCT type FROM metrics")
@@ -242,7 +242,7 @@ def get_daily_temperature_picks(host_ip = None, device_type=None, name=None, pag
         )
     """
 
-    with get_conn() as conn:
+    with get_connection() as conn:
         cur = conn.cursor()
         cur.execute(count_query, params)
         total = cur.fetchone()[0]
