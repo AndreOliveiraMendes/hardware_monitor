@@ -9,7 +9,16 @@ FLASK_HOST = os.getenv("FLASK_HOST", "localhost")
 FLASK_PORT = int(os.getenv("FLASK_PORT", "5000"))
 DEBUG_MODE = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
 
+# Telegram bot configuration
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
+# smtp configuration
+SMTP_HOST = os.getenv("SMTP_HOST")
+SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+SMTP_USER = os.getenv("SMTP_USER")
+SMTP_PASS = os.getenv("SMTP_PASS")
+SMTP_FROM = os.getenv("SMTP_FROM")  # ex: "monitor@seu-dominio.com"
+SMTP_TLS = os.getenv("SMTP_TLS", "true").lower() == "true"
 
 INTERNAL_TOKEN = os.getenv("INTERNAL_TOKEN")
