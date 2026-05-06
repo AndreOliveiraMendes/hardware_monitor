@@ -3,6 +3,7 @@ import sqlite3
 
 from config import DB_PATH
 
+
 def get_db_version(conn):
     cur = conn.cursor()
     cur.execute("PRAGMA user_version;")

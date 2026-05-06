@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
 
 from app.notifier.notifier import send_mail, send_telegram
 from config import INTERNAL_TOKEN

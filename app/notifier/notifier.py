@@ -4,6 +4,7 @@ import urllib.request
 
 from config import TELEGRAM_CHAT_ID, TELEGRAM_TOKEN
 
+
 def send_mail(to, subject, body):
     lines = [
         "From: seu@email.com",
