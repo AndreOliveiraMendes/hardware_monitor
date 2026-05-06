@@ -27,6 +27,23 @@
 {% endblock content %}
 {% block script %}
     <script>
+        // meta
+        function parseMeta(meta) {
+            if (!meta) return null;
+
+            if (typeof meta === "string") {
+                try {
+                    return JSON.parse(meta);
+                } catch (e) {
+                    console.warn("Invalid meta JSON:", meta);
+                    return null;
+                }
+            }
+
+            return meta;
+        }
+
+        // temperatura
         function formatTemp(value, type) {
             const temp_levels = {
                 cpu: [
@@ -58,6 +75,7 @@
             };
         }
 
+        // bateria
         function getBatteryIcon(value) {
             if (value >= 80) return "fa-battery-full";
             if (value >= 60) return "fa-battery-three-quarters";
@@ -66,16 +84,57 @@
             return "fa-battery-empty";
         }
 
-        function formatBattery(value) {
+        function formatBattery(value, meta) {
             const icon = getBatteryIcon(value);
 
+            let extra = "";
+            let cls = "";
+
+            if (meta) {
+                // status (Charging, Full, Not charging...)
+                if (meta.status) {
+                    extra += ` | ${meta.status}`;
+                }
+
+                // AC ou bateria
+                if (meta.ac_online !== undefined) {
+                    extra += meta.ac_online ? " (AC)" : " (Battery)";
+                }
+
+                // carregando ⚡
+                if (meta.status === "Charging") {
+                    extra += " ⚡";
+                }
+
+                // health
+                if (meta.health !== undefined) {
+                    const h = meta.health.toFixed(1);
+
+                    if (meta.health < 50) {
+                        extra += ` | health: ${h}% ⚠️`;
+                    } else {
+                        extra += ` | health: ${h}%`;
+                    }
+                }
+            }
+
+            // cor baseada na %
+            if (value == null) {
+                cls = "text-muted";
+            } else if (value < 20) {
+                cls = "text-danger";
+            } else if (value < 40) {
+                cls = "text-warning";
+            }
+
             return {
-                text: value == null ? "—" : `${value}%`,
+                text: value == null ? "—" : `${value}%${extra}`,
                 icon,
-                cls: value == null ? "text-muted" : ""
+                cls
             };
         }
 
+        //tailscale
         function getTailscaleIcon(status) {
             if (!status) return "fa-circle-question";
             if (status.includes("self")) return "fa-server"
@@ -89,6 +148,7 @@
             return local ? "fa-house-signal" : "fa-wifi";
         }
 
+        //render
         function renderItem({icon, title, value, time, valueCls = "", iconValue = "" }) {
             return `
                 <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -163,7 +223,9 @@
             } else {
                 for (const ip in data.battery) {
                     const info = data.battery[ip];
-                    const f = formatBattery(info.value);
+
+                    const meta = parseMeta(info.meta);
+                    const f = formatBattery(info.value, meta);
 
                     batteryList.innerHTML += renderItem({
                         icon: f.icon,

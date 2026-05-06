@@ -78,14 +78,16 @@ def get_latest_metrics():
                 data[dtype][hip][name] = {
                     "hostname": hn,
                     "value": value,
-                    "time": time
+                    "time": time,
+                    "meta": meta
                 }
 
         elif info_type == "battery":
             data["battery"][hip] = {
                 "hostname": hn,
                 "value": value,
-                "time": time
+                "time": time,
+                "meta": meta
             }
 
         elif info_type == "network":
