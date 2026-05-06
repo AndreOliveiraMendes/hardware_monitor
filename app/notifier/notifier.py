@@ -10,12 +10,14 @@ from config import (SMTP_FROM, SMTP_HOST, SMTP_PASS, SMTP_PORT, SMTP_TLS,
 def send_mail(to, subject, body):
     if not SMTP_HOST:
         raise RuntimeError("SMTP_HOST não configurado")
-    if not SMTP_FROM or not SMTP_USER:
-        raise RuntimeError("SMTP_FROM ou SMTP_USER não configurado")
+
+    from_addr = SMTP_FROM or SMTP_USER
+    if not from_addr:
+        raise RuntimeError("SMTP_FROM ou SMTP_USER precisa estar definido")
 
     msg = MIMEText(body, "plain", "utf-8")
     msg["Subject"] = subject
-    msg["From"] = SMTP_FROM or SMTP_USER
+    msg["From"] = from_addr
     msg["To"] = to
 
     with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
