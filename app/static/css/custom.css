@@ -1,3 +1,21 @@
 .text-orange {
     color: #ff6600;
 }
+
+.icon-stack {
+    position: relative;
+    display: inline-block;
+    width: 1.2em;
+}
+
+.icon-stack i {
+    position: absolute;
+    left: 0;
+    top: -10px;
+}
+
+.icon-stack .overlay {
+    font-size: 0.6em;
+    left: 1.6em;
+    top: 0.3em;
+}

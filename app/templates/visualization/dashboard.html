@@ -61,18 +61,28 @@
             return "";
         }
 
-        function getInfoIcon(type) {
-            if (type === "temperature") return "fa-temperature-high";
-            if (type === "battery") return "fa-battery-half";
-            if (type === "network") return "fa-network-wired";
-            return "fa-circle-info";
-        }
-
         function getInfoColor(type) {
             if (type === "temperature") return "text-danger";
             if (type === "battery") return "text-success";
             if (type === "network") return "text-primary";
             return "text-secondary";
+        }
+
+        function getInfoIcon(type) {
+            if (type === "health") {
+                return `
+                    <span class="icon-stack me-2 text-orange">
+                        <i class="fa-solid fa-hard-drive"></i>
+                        <i class="fa-solid fa-heart-pulse overlay"></i>
+                    </span>
+                `;
+            }
+
+            if (type === "temperature") return `<i class="fa-solid fa-temperature-high ${getInfoColor(type)} me-2"></i>`;
+            if (type === "battery") return `<i class="fa-solid fa-battery-half ${getInfoColor(type)} me-2"></i>`;
+            if (type === "network") return `<i class="fa-solid fa-network-wired ${getInfoColor(type)} me-2"></i>`;
+
+            return `<i class="fa-solid fa-circle-info ${getInfoColor(type)} me-2"></i>`;
         }
 
         function formatMetaTooltip(type, meta) {
@@ -140,7 +150,7 @@
                 list.innerHTML += `
                     <li class="list-group-item d-flex justify-content-between">
                         <span title="${tooltip}">
-                            <i class="fa-solid ${getInfoIcon(infotype)} ${getInfoColor(infotype)} me-2"></i>
+                            ${getInfoIcon(infotype)}
                              ${label}
                         </span>
                         <span class="fw-bold">${value ?? "?"}${unit}</span>
