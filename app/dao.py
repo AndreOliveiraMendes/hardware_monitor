@@ -55,27 +55,35 @@ def get_latest_metrics():
             WHERE id IN (
                 SELECT MAX(id)
                 FROM metrics
-                GROUP BY device_type, host_ip, name
+                GROUP BY type, device_type, host_ip, name
             )
         """)
 
         rows = cur.fetchall()
 
-    data = {"cpu": {}, "disk": {}, "battery": {}, "network": {}}
+    data = {
+        "temperature":{
+            "cpu": {},
+            "disk": {}
+        },
+        "battery": {},
+        "network": {}
+    }
 
     for info_type, time, hn, hip, device_type, name, value, meta in rows:
-
         # garante host
         for key in ["cpu", "disk", "battery", "network"]:
-            if key != "battery":
+            if key not in ["battery", "cpu", "disk"]:
                 data[key].setdefault(hip, {})
+            elif key in ["cpu", "disk"]:
+                data["temperature"][key].setdefault(hip, {})
 
         if info_type == "temperature":
             dtype = device_type.lower()
 
             if dtype in ["cpu", "disk"]:
                 # 👇 agora preserva "name" (core0, core1, sda1, etc)
-                data[dtype][hip][name] = {
+                data[info_type][dtype][hip][name] = {
                     "hostname": hn,
                     "value": value,
                     "time": time,

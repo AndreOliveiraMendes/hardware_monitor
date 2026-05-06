@@ -214,8 +214,8 @@
             networkList.innerHTML = "";
 
             // ---------------- CPU ----------------
-            for (const ip in data.cpu || {}) {
-                const cores = data.cpu[ip];
+            for (const ip in data.temperature.cpu || {}) {
+                const cores = data.temperature.cpu[ip];
 
                 for (const core in cores) {
                     const info = cores[core];
@@ -232,8 +232,8 @@
             }
 
             // ---------------- DISK ----------------
-            for (const ip in data.disk || {}) {
-                const disks = data.disk[ip];
+            for (const ip in data.temperature.disk || {}) {
+                const disks = data.temperature.disk[ip];
 
                 for (const disk in disks) {
                     const info = disks[disk];
@@ -242,7 +242,7 @@
 
                     diskList.innerHTML += renderItem({
                         icon: "fa-hard-drive",
-                        title: `${info.hostname} - ${meta?.model || disk} (${ip})`,
+                        title: `${info.hostname} - ${disk} (${ip})`,
                         value: f.text,
                         valueCls: f.cls,
                         time: info.time
