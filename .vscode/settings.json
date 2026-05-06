@@ -6,5 +6,5 @@
     "json.schemaDownload.trustedDomains": {
         "https://raw.githubusercontent.com/DavidAnson/markdownlint/": true
     },
-    "remote.autoForwardPorts": false
+    "remote.restoreForwardedPorts": false
 }
