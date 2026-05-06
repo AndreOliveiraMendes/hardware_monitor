@@ -73,7 +73,7 @@ def update_score(host_ip, device_type, name, temp):
             direction = "desceu"
 
         msg = f"level {direction} de {level} para {new_level}"
-        if old_rank > 1:
+        if new_rank > 1:
             send_mail('ao_mendes@hotmail.com', new_level, msg)
         send_telegram(msg)
     
