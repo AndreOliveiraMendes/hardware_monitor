@@ -42,6 +42,21 @@
         </ul>
     </div>
     <div id="pagination" class="d-flex justify-content-center"></div>
+    <div class="modal fade" id="metaModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title">Meta data</h5>
+                    <button type="button"
+                            class="btn-close btn-close-white"
+                            data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <pre><code id="metaCode" class="language-json"></code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock content %}
 {% block script %}
     <script>
@@ -50,6 +65,20 @@
         const url_filters = "{{ url_for('api.filters') }}";
         const selected = {{ selected|tojson }};
         let first = true;
+
+        function openMeta(meta) {
+            const code = document.getElementById("metaCode");
+
+            code.textContent = JSON.stringify(meta, null, 2);
+
+            // Prism highlight
+            if (window.Prism) {
+                Prism.highlightElement(code);
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById("metaModal"));
+            modal.show();
+        }
 
         function formatInfo(params) {
             const start = params.get("start");
@@ -150,8 +179,10 @@
                 list.innerHTML += `
                     <li class="list-group-item d-flex justify-content-between">
                         <span title="${tooltip}">
-                            ${getInfoIcon(infotype)}
-                             ${label}
+                            <span onclick='openMeta(${JSON.stringify(meta || {})})' style="cursor:pointer">
+                                ${getInfoIcon(infotype)}
+                            </span>
+                            ${label}
                         </span>
                         <span class="fw-bold">${value ?? "?"}${unit}</span>
                     </li>
@@ -216,7 +247,6 @@
             }
             const res = await fetch(url_filters + "?" + params.toString());
             const data = await res.json();
-            console.log()
 
             fillSelect("host_ip", data.host_ips);
             fillSelect("info_type", data.info_types);
