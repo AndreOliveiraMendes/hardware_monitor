@@ -1,7 +1,7 @@
 from flask import current_app
 
 from app.dao import get_heat_score, insert_metric, update_heat_score
-from app.notifier.notifier import send_mail, send_telegram
+from app.notifier.notifier import send_mail_safe, send_telegram
 
 LEVEL_ORDER = {
     "ok": 0,
@@ -9,6 +9,10 @@ LEVEL_ORDER = {
     "high": 2,
     "critical": 3,
     "no temp": -1
+}
+ALERT_LEVELS = {
+    "high",
+    "critical"
 }
 
 def update_score(host_ip, device_type, name, temp):
@@ -64,6 +68,7 @@ def update_score(host_ip, device_type, name, temp):
         score, new_level = -1, 'no temp'
         
     if new_level != level:
+        notified = False
         old_rank = LEVEL_ORDER.get(level, -1)
         new_rank = LEVEL_ORDER.get(new_level, -1)
 
@@ -73,9 +78,18 @@ def update_score(host_ip, device_type, name, temp):
             direction = "desceu"
 
         msg = f"level {direction} de {level} para {new_level}"
-        if new_rank > 1:
-            send_mail('ao_mendes@hotmail.com', new_level, msg)
-        send_telegram(msg)
+
+        if new_level in ALERT_LEVELS:
+            notified = send_mail_safe('ao_mendes@hotmail.com', new_level, msg) or notified
+
+        try:
+            send_telegram(msg)
+            notified = True
+        except Exception:
+            current_app.logger.exception("Erro ao mandar telegram")
+
+        if not notified:
+            current_app.logger.error("FALHA TOTAL de notificação")
     
     return score, new_level
 
