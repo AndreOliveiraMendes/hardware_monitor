@@ -1,7 +1,15 @@
 from flask import current_app
 
 from app.dao import get_heat_score, insert_metric, update_heat_score
+from app.notifier.notifier import send_mail, send_telegram
 
+LEVEL_ORDER = {
+    "ok": 0,
+    "warning": 1,
+    "high": 2,
+    "critical": 3,
+    "no temp": -1
+}
 
 def update_score(host_ip, device_type, name, temp):
     rows = get_heat_score(host_ip, device_type, name)
@@ -44,8 +52,10 @@ def update_score(host_ip, device_type, name, temp):
             else:
                 score += 5
 
-        if score >= 30:
+        if score >= 50:
             new_level = 'critical'
+        elif score >= 30:
+            new_level = 'high'
         elif score >= 15:
             new_level = 'warning'
         else:
@@ -53,7 +63,19 @@ def update_score(host_ip, device_type, name, temp):
     except (ValueError, TypeError):
         score, new_level = -1, 'no temp'
         
-    # TODO (logica entre level e new_level)
+    if new_level != level:
+        old_rank = LEVEL_ORDER.get(level, -1)
+        new_rank = LEVEL_ORDER.get(new_level, -1)
+
+        if new_rank > old_rank:
+            direction = "subiu"
+        else:
+            direction = "desceu"
+
+        msg = f"level {direction} de {level} para {new_level}"
+        if old_rank > 1:
+            send_mail('ao_mendes@hotmail.com', new_level, msg)
+        send_telegram(msg)
     
     return score, new_level
 
