@@ -75,6 +75,38 @@
             };
         }
 
+        function formatDisk(value, meta) {
+            const temp = formatTemp(value, 'disk');
+
+            let extra = "";
+
+            if (meta) {
+                // modelo
+                if (meta.model) {
+                    extra += ` | ${meta.model}`;
+                }
+                if (!meta?.model) {
+                    extra += " | unknown device ⚠️";
+                }
+
+                // health (SMART)
+                if (meta.health !== null && meta.health !== undefined) {
+                    extra += meta.health ? " | SMART: OK" : " | SMART: FAIL ⚠️";
+                }
+
+                // horas ligadas
+                if (meta.power_on_hours) {
+                    const days = Math.floor(meta.power_on_hours / 24);
+                    extra += ` | ${days}d on`;
+                }
+            }
+
+            return {
+                text: `${temp.text}${extra}`,
+                cls: temp.cls
+            };
+        }
+
         // bateria
         function getBatteryIcon(value) {
             if (value >= 80) return "fa-battery-full";
@@ -205,11 +237,12 @@
 
                 for (const disk in disks) {
                     const info = disks[disk];
-                    const f = formatTemp(info.value, 'disk');
+                    const meta = parseMeta(info.meta);
+                    const f = formatDisk(info.value, meta);
 
                     diskList.innerHTML += renderItem({
                         icon: "fa-hard-drive",
-                        title: `${info.hostname} - ${disk} (${ip})`,
+                        title: `${info.hostname} - ${meta?.model || disk} (${ip})`,
                         value: f.text,
                         valueCls: f.cls,
                         time: info.time
