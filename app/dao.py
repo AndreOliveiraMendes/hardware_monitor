@@ -66,6 +66,10 @@ def get_latest_metrics():
             "cpu": {},
             "disk": {}
         },
+        "health": {
+            "cpu": {},
+            "disk": {}
+        },
         "battery": {},
         "network": {}
     }
@@ -77,6 +81,7 @@ def get_latest_metrics():
                 data[key].setdefault(hip, {})
             elif key in ["cpu", "disk"]:
                 data["temperature"][key].setdefault(hip, {})
+                data["health"][key].setdefault(hip, {})
 
         if info_type == "temperature":
             dtype = device_type.lower()
@@ -89,6 +94,14 @@ def get_latest_metrics():
                     "time": time,
                     "meta": meta
                 }
+
+        elif info_type == "health":
+            data[info_type][dtype][hip][name] = {
+                "hostname": hn,
+                "value": value,
+                "time": time,
+                "meta": meta
+            }
 
         elif info_type == "battery":
             data["battery"][hip] = {
