@@ -12,31 +12,36 @@ def process_notifications():
 
     for n in notifications:
         nid = n[0]
+        hip = n[1]
+        dev = n[2]
+        name = n[3]
+        msg = n[4]
+        level = n[5]
 
         try:
             print(
                 f"[notifications:{nid}] "
-                f"processing level={n['level']} "
-                f"host={n['host_ip']} "
-                f"device={n['device_type']} "
-                f"name={n['name']}"
+                f"processing level={level} "
+                f"host={hip} "
+                f"device={dev} "
+                f"name={name}"
             )
 
             text = (
-                f"[{n['level'].upper()}] "
-                f"{n['host_ip']} / "
-                f"{n['device_type']} / "
-                f"{n['name']}\n"
-                f"{n['msg']}"
+                f"[{level.upper()}] "
+                f"{hip} / "
+                f"{dev} / "
+                f"{name}\n"
+                f"{msg}"
             )
 
             send_telegram(text)
             print(f"[notifications:{nid}] telegram=ok")
 
-            if n["level"] in ALERT_LEVELS:
+            if level in ALERT_LEVELS:
                 send_mail_safe(
                     "ao_mendes@hotmail.com",
-                    n["level"],
+                    level,
                     text
                 )
                 print(f"[notifications:{nid}] mail=ok")
