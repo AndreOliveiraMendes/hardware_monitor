@@ -11,7 +11,7 @@ def process_notifications():
     print(f"[notifications] pending={len(notifications)}")
 
     for n in notifications:
-        nid = n["id"]
+        nid = n[0]
 
         try:
             print(
