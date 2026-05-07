@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 
-from app.db import execute, query
+from app.db import execute, query, query_dict
 from app.extension import get_connection
 
 # notification
@@ -27,10 +27,27 @@ def push_notification(host_ip, device_type, name, msg, level):
     ))
     
 def get_pending_notifications(limit=10):
-    return query("""
-        SELECT *
+    return query_dict("""
+        SELECT
+            id,
+            host_ip,
+            device_type,
+            name,
+            msg,
+            level,
+            retry_count,
+            datetime(created_at, 'localtime') as created_at
         FROM notifications
-        WHERE status = 'pending'
+        WHERE
+            status = 'pending'
+            OR (
+                status = 'failed'
+                AND retry_count < 5
+                AND (
+                    next_retry_at IS NULL
+                    OR datetime(next_retry_at) <= datetime(CURRENT_TIMESTAMP, 'localtime')
+                )
+            )
         ORDER BY created_at
         LIMIT ?
     """, (limit,))

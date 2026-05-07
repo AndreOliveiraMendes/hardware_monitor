@@ -26,7 +26,7 @@ def migrate(conn):
     version = get_db_version(conn)
     cur = conn.cursor()
 
-    while version < 5:
+    while version < 6:
         if version:
             print(f"Migrating to v{version + 1}...")
         else:
@@ -147,6 +147,25 @@ def migrate(conn):
             cur.execute("""
                 CREATE INDEX IF NOT EXISTS idx_notifications_status_created
                 ON notifications(status, created_at)
+            """)
+            
+        elif version == 5:
+            # número de tentativas
+            cur.execute("""
+                ALTER TABLE notifications
+                ADD COLUMN retry_count INTEGER NOT NULL DEFAULT 0
+            """)
+
+            # (opcional) última tentativa
+            cur.execute("""
+                ALTER TABLE notifications
+                ADD COLUMN next_retry_at TIMESTAMP NULL
+            """)
+
+            # (opcional) index pra retry
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_notifications_retry
+                ON notifications(status, retry_count)
             """)
 
         version += 1

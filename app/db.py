@@ -1,8 +1,17 @@
+import sqlite3
+
 from app.extension import get_connection
 
 
 def query(sql, params=()):
     with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute(sql, params)
+        return cur.fetchall()
+
+def query_dict(sql, params=()):
+    with get_connection() as conn:
+        conn.row_factory = sqlite3.Row
         cur = conn.cursor()
         cur.execute(sql, params)
         return cur.fetchall()
