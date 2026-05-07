@@ -4,17 +4,46 @@ from datetime import datetime
 from app.db import execute, query
 from app.extension import get_connection
 
+# notification
 
-def insert_metric(**kwargs):
-    fields = list(kwargs.keys())
-    values = list(kwargs.values())
+def push_notification(host_ip, device_type, name, msg, level):
+    execute("""
+        INSERT INTO notifications (
+            host_ip,
+            device_type,
+            name,
+            msg,
+            level,
+            status
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (
+        host_ip,
+        device_type,
+        name,
+        msg,
+        level,
+        'pending'
+    ))
+    
+def get_pending_notifications(limit=10):
+    return query("""
+        SELECT *
+        FROM notifications
+        WHERE status = 'pending'
+        ORDER BY created_at
+        LIMIT ?
+    """, (limit,))
+    
+def update_notification_status(notification_id, status):
+    execute("""
+        UPDATE notifications
+        SET status = ?,
+            sent_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    """, (status, notification_id))
 
-    sql = f"""
-        INSERT INTO metrics ({', '.join(fields)})
-        VALUES ({', '.join(['?'] * len(values))})
-    """
-
-    execute(sql, values)
+# states
         
 def get_heat_score(host_ip, device_type, name):
     return query("""
@@ -43,6 +72,19 @@ def update_heat_score(host_ip, device_type, name, score, level):
             level = excluded.level,
             last_update = CURRENT_TIMESTAMP
     """, (host_ip, device_type, name, score, level))
+
+# metrics
+
+def insert_metric(**kwargs):
+    fields = list(kwargs.keys())
+    values = list(kwargs.values())
+
+    sql = f"""
+        INSERT INTO metrics ({', '.join(fields)})
+        VALUES ({', '.join(['?'] * len(values))})
+    """
+
+    execute(sql, values)
     
 def get_latest_metrics():
     with get_connection() as conn:
@@ -96,6 +138,8 @@ def get_latest_metrics():
                 }
 
         elif info_type == "health":
+            dtype = device_type.lower()
+            
             data[info_type][dtype][hip][name] = {
                 "hostname": hn,
                 "value": value,

@@ -26,7 +26,7 @@ def migrate(conn):
     version = get_db_version(conn)
     cur = conn.cursor()
 
-    while version < 4:
+    while version < 5:
         if version:
             print(f"Migrating to v{version + 1}...")
         else:
@@ -111,6 +111,42 @@ def migrate(conn):
             cur.execute("""
                 CREATE INDEX IF NOT EXISTS idx_state_level
                 ON state (level);
+            """)
+        
+        elif version == 4:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS notifications (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+                    host_ip TEXT,
+                    device_type TEXT,
+                    name TEXT,
+
+                    msg TEXT NOT NULL,
+                    level TEXT NOT NULL,
+                    status TEXT NOT NULL DEFAULT 'pending',
+
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    sent_at TIMESTAMP NULL
+                )
+            """)
+
+            # fila de envio
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_notifications_status
+                ON notifications(status)
+            """)
+
+            # ordenação/cleanup
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_notifications_created_at
+                ON notifications(created_at)
+            """)
+
+            # consultas por status + data
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_notifications_status_created
+                ON notifications(status, created_at)
             """)
 
         version += 1

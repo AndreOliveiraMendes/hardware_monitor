@@ -1,19 +1,7 @@
 from flask import current_app
 
-from app.dao import get_heat_score, insert_metric, update_heat_score
-from app.notifier.notifier import send_mail_safe, send_telegram
-
-LEVEL_ORDER = {
-    "ok": 0,
-    "warning": 1,
-    "high": 2,
-    "critical": 3,
-    "no temp": -1
-}
-ALERT_LEVELS = {
-    "high",
-    "critical"
-}
+from app.dao import get_heat_score, insert_metric, push_notification, update_heat_score
+from config import LEVEL_ORDER
 
 def update_score(host_ip, device_type, name, temp):
     rows = get_heat_score(host_ip, device_type, name)
@@ -66,9 +54,12 @@ def update_score(host_ip, device_type, name, temp):
             new_level = 'ok'
     except (ValueError, TypeError):
         score, new_level = -1, 'no temp'
+      
+    if level == "???":
+        msg = f"first score registered"
         
-    if new_level != level:
-        notified = False
+        push_notification(host_ip, device_type, name, msg, new_level)
+    elif new_level != level:
         old_rank = LEVEL_ORDER.get(level, -1)
         new_rank = LEVEL_ORDER.get(new_level, -1)
 
@@ -78,18 +69,8 @@ def update_score(host_ip, device_type, name, temp):
             direction = "desceu"
 
         msg = f"level {direction} de {level} para {new_level}"
-
-        if new_level in ALERT_LEVELS:
-            notified = send_mail_safe('ao_mendes@hotmail.com', new_level, msg) or notified
-
-        try:
-            send_telegram(msg)
-            notified = True
-        except Exception:
-            current_app.logger.exception("Erro ao mandar telegram")
-
-        if not notified:
-            current_app.logger.error("FALHA TOTAL de notificação")
+        
+        push_notification(host_ip, device_type, name, msg, new_level)
     
     return score, new_level
 
