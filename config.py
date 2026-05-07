@@ -21,4 +21,18 @@ SMTP_PASS = os.getenv("SMTP_PASS")
 SMTP_FROM = os.getenv("SMTP_FROM")
 SMTP_TLS = os.getenv("SMTP_TLS", "true").lower() == "true"
 
+# test token
 INTERNAL_TOKEN = os.getenv("INTERNAL_TOKEN")
+
+# collect params
+LEVEL_ORDER = {
+    "ok": 0,
+    "warning": 1,
+    "high": 2,
+    "critical": 3,
+    "no temp": -1
+}
+ALERT_LEVELS = {
+    "high",
+    "critical"
+}
