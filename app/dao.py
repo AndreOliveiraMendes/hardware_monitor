@@ -34,6 +34,14 @@ def get_pending_notifications(limit=10):
         ORDER BY created_at
         LIMIT ?
     """, (limit,))
+    
+def update_notification_status(notification_id, status):
+    execute("""
+        UPDATE notifications
+        SET status = ?,
+            sent_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    """, (status, notification_id))
 
 # states
         
