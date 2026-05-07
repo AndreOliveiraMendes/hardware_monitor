@@ -41,7 +41,7 @@ def process_notifications():
                 )
                 print(f"[notifications:{nid}] mail=ok")
 
-            update_notification_status(n["id"], "sent")
+            update_notification_status(nid, "sent")
 
             print(f"[notifications:{nid}] status=sent")
 
@@ -52,6 +52,6 @@ def process_notifications():
                 f"erro ao processar notification {nid}"
             )
 
-            update_notification_status(n["id"], "failed")
+            update_notification_status(nid, "failed")
 
             print(f"[notifications:{nid}] status=failed")
