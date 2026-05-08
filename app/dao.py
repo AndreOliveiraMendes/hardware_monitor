@@ -357,43 +357,39 @@ def get_daily_temperature_picks(host_ip = None, device_type=None, name=None, pag
         "has_next": (page + 1) * per_page < total,
         "has_prev": page > 0
     }
-    
-def get_temperature_series(host_ip=None, device_type=None, name=None, start=None, end=None, page=0, per_page=420):
-    query_sql = """
-        SELECT datetime(timestamp, 'localtime'), host_name, host_ip, device_type, name, value
-        FROM metrics
-        WHERE type = 'temperature' and value IS NOT NULL
-    """
 
-    params = []
+# TODO: terminar isso
+def get_temperature_series(host_ip=None, device_type=None, name=None, start=None, end=None, page=0, time_window=1):
+    
+    filters = ["type = ? and value IS NOT NULL"]
+    params = ['temperature']
     
     if host_ip:
-        query_sql += " AND host_ip = ?"
+        filters.append("host_ip = ?")
         params.append(host_ip)
 
     if device_type:
-        query_sql += " AND device_type = ?"
+        filters.append("device_type = ?")
         params.append(device_type)
 
     if name:
-        query_sql += " AND name = ?"
+        filters.append("name = ?")
         params.append(name)
 
     if start:
-        start = datetime.fromisoformat(start)
-        query_sql += " AND datetime(timestamp, 'localtime') >= ?"
+        #start = datetime.fromisoformat(start)
+        filters.append("datetime(timestamp, 'localtime') >= ?")
         params.append(start)
 
     if end:
-        end = datetime.fromisoformat(end)
-        query_sql += " AND datetime(timestamp, 'localtime') <= ?"
+        #end = datetime.fromisoformat(end)
+        filters.append("datetime(timestamp, 'localtime') <= ?")
         params.append(end)
 
-    query_sql += " ORDER BY timestamp LIMIT ?"
-    params.append(per_page)
-    
-    if page:
-        query_sql += f" OFFSET ?"
-        params.append(page * per_page)
+    window_sql = "SELECT min(datetime(timestamp, 'localtime')), max(datetime(timestamp, 'localtime')) FROM metrics"
 
-    return query(query_sql, params)
+    window = query(window_sql + " WHERE " + " AND ".join(filters), params)
+    min_time, max_time = window[0][0], window[0][1]
+    start_obj, end_obj = datetime.strptime(min_time, "%Y-%m-%d %H:%M:%S"), datetime.strptime(max_time, "%Y-%m-%d %H:%M:%S")
+    print(start_obj, end_obj)
+    return window

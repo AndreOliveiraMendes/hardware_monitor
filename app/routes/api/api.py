@@ -247,6 +247,7 @@ def get_hscore():
 def get_ahscore():
     return jsonify(get_all_heat_scores())
 
+# TODO: terminar isso
 @bp.route("/temperature-series")
 def temperature_series():
     host_ip = request.args.get("host_ip")
@@ -262,17 +263,4 @@ def temperature_series():
 
     rows = get_temperature_series(host_ip, device_type, name, start, end, page)
 
-    # transforma em dict (melhor pro frontend)
-    data = [
-        {
-            "timestamp": r[0],
-            "hostname": r[1],
-            "host_ip": r[2],
-            "device_type": r[3],
-            "name": r[4],
-            "value": r[5],
-        }
-        for r in rows
-    ]
-
-    return jsonify(data)
+    return jsonify(rows)
