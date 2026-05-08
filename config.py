@@ -39,14 +39,14 @@ TEMP_LEVELS = {
 
 TEMP_RULES = {
     "CPU": [
-        {"max": 35, "delta": -7},
-        {"max": 50, "delta": -5},
-        {"max": 60, "delta": -3},
-        {"max": 70, "delta": -2},
+        {"max": 35, "delta": -4},
+        {"max": 50, "delta": -2},
+        {"max": 60, "delta": -1},
+        {"max": 70, "delta": 0},
         {"max": 75, "delta": +1},
         {"max": 80, "delta": +2},
-        {"max": 90, "delta": +3},
-        {"max": float("inf"), "delta": +5},
+        {"max": 90, "delta": +4},
+        {"max": float("inf"), "delta": +8},
     ],
     "disk": [
         {"max": 35, "delta": -2},
