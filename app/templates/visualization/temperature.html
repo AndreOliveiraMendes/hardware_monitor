@@ -53,6 +53,14 @@
     <div class="card shadow-sm p-3">
         <button class="btn btn-sm btn-secondary mb-2" onclick="chart.resetZoom()">Reset Zoom</button>
         <canvas id="chart"></canvas>
+        <div class="limits">
+            {% for info in limits.CPU %}
+                <div class="limit-item">
+                    <span class="color-line" style="border-color:#{{ info.color }}"></span>
+                    {{ info.value }}°C - CPU
+                </div>
+            {% endfor %}
+        </div>
     </div>
 {% endblock content %}
 {% block script %}
@@ -230,16 +238,6 @@
                                         borderColor: "#{{ info.color }}",
                                         borderWidth: 1,
                                         borderDash: [4, 4],
-                                        label: {
-                                            display: true,
-                                            content: `{{ info.value }}°C - {{ loop.index }}/{{ loop.length }}`,
-                                            position: "end",
-                                            backgroundColor: "#{{ info.label_bgcolor }}",
-                                            color: "#{{ info.label_color }}",
-                                            font: {
-                                                size: 10
-                                            }
-                                        }
                                     },
                                 {% endfor %}
 
@@ -380,5 +378,5 @@
 
         setInterval(loadChart, 60000);
         updatePageIndicator();
-    </script>
+</script>
 {% endblock script %}

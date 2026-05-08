@@ -27,10 +27,10 @@ INTERNAL_TOKEN = os.getenv("INTERNAL_TOKEN")
 # alert_params
 TEMP_LEVELS = {
     "CPU":[
-        {"value": 70, "color": "f1c40f", "label_bgcolor": "f1c40f", "label_color": "000"},
-        {"value": 75, "color": "e67e22", "label_bgcolor": "e67e22", "label_color": "fff"},
-        {"value": 80, "color": "e74c3c", "label_bgcolor": "e74c3c", "label_color": "fff"},
-        {"value": 90, "color": "8b0000", "label_bgcolor": "8b0000", "label_color": "fff"},
+        {"value": 70, "color": "f1c40f"},
+        {"value": 75, "color": "e67e22"},
+        {"value": 80, "color": "e74c3c"},
+        {"value": 90, "color": "8b0000"},
     ],
     "HD":[
         
