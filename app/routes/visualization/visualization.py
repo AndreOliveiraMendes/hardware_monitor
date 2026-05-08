@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request
 
 from app.dao import get_daily_temperature_picks
+from config import TEMP_LEVELS
 
 bp = Blueprint('visualization', __name__, url_prefix='/visualization')
 
@@ -38,8 +39,10 @@ def grafico_temperatura():
         "device_type": device_type,
         "name": name
     }
+    
     return render_template("visualization/temperature.html",
-        selected = selected
+        selected = selected,
+        limits = TEMP_LEVELS
     )
 
 @bp.route("/extremos")

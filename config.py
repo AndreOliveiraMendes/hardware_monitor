@@ -24,6 +24,40 @@ SMTP_TLS = os.getenv("SMTP_TLS", "true").lower() == "true"
 # test token
 INTERNAL_TOKEN = os.getenv("INTERNAL_TOKEN")
 
+# alert_params
+TEMP_LEVELS = {
+    "CPU":[
+        {"value": 70, "color": "f1c40f", "label_bgcolor": "f1c40f", "label_color": "000"},
+        {"value": 75, "color": "e67e22", "label_bgcolor": "e67e22", "label_color": "fff"},
+        {"value": 80, "color": "e74c3c", "label_bgcolor": "e74c3c", "label_color": "fff"},
+        {"value": 90, "color": "8b0000", "label_bgcolor": "8b0000", "label_color": "fff"},
+    ],
+    "HD":[
+        
+    ]
+}
+
+TEMP_RULES = {
+    "CPU": [
+        {"max": 35, "delta": -7},
+        {"max": 50, "delta": -5},
+        {"max": 60, "delta": -3},
+        {"max": 70, "delta": -2},
+        {"max": 75, "delta": +1},
+        {"max": 80, "delta": +2},
+        {"max": 90, "delta": +3},
+        {"max": float("inf"), "delta": +5},
+    ],
+    "disk": [
+        {"max": 35, "delta": -2},
+        {"max": 40, "delta": -1},
+        {"max": 45, "delta": +1},
+        {"max": 50, "delta": +2},
+        {"max": 55, "delta": +3},
+        {"max": float("inf"), "delta": +5},
+    ]
+}
+
 # collect params
 LEVEL_ORDER = {
     "ok": 0,
@@ -32,6 +66,7 @@ LEVEL_ORDER = {
     "critical": 3,
     "no temp": -1
 }
+
 ALERT_LEVELS = {
     "high",
     "critical"

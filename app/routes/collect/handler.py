@@ -1,7 +1,21 @@
 from flask import current_app
 
 from app.dao import get_heat_score, insert_metric, push_notification, update_heat_score
-from config import LEVEL_ORDER
+from config import LEVEL_ORDER, TEMP_RULES
+
+def apply_temp_score(device_type, temp, score):
+    rules = TEMP_RULES.get(device_type, [])
+
+    for rule in rules:
+        if temp < rule["max"]:
+            delta = rule["delta"]
+
+            if delta < 0:
+                return max(0, score + delta)
+            else:
+                return score + delta
+
+    return score
 
 def update_score(host_ip, device_type, name, temp):
     rows = get_heat_score(host_ip, device_type, name)
@@ -13,36 +27,7 @@ def update_score(host_ip, device_type, name, temp):
         score, level = rows[0]
         
     try:
-        if device_type == 'CPU':
-            if temp < 35:
-                score = max(0, score - 7)
-            elif temp < 50:
-                score = max(0, score - 5)
-            elif temp < 60:
-                score = max(0, score - 3)
-            elif temp < 70:
-                score = max(0, score - 2)
-            elif temp < 75:
-                score += 1
-            elif temp < 80:
-                score += 2
-            elif temp < 90:
-                score += 3
-            else:
-                score += 5
-        else:
-            if temp < 35:
-                score = max(0, score - 2)
-            elif temp < 40:
-                score = max(0, score - 1)
-            elif temp < 45:
-                score += 1
-            elif temp < 50:
-                score += 2
-            elif temp < 55:
-                score += 3
-            else:
-                score += 5
+        score = apply_temp_score(device_type, temp, score)
 
         if score >= 50:
             new_level = 'critical'
