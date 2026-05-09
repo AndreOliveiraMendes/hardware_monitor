@@ -72,7 +72,8 @@
         let chart;
         const selected = {{ selected|tojson }};
         let first = true;
-        let lastFetchCount = 0;
+        let prev;
+        let next;
 
         function getColor(i) {
             const colors = [
@@ -86,8 +87,10 @@
             const params = new URLSearchParams(window.location.search);
 
             const res = await fetch(url + "?" + params.toString());
-            const rawData = await res.json();
-            lastFetchCount = rawData.length;
+            const rawoutput = await res.json();
+            const rawData = rawoutput.data;
+            prev = rawoutput.prev;
+            next = rawoutput.next; 
 
             if (!rawData || rawData.length === 0) {
                 if (chart) chart.destroy();
@@ -310,7 +313,7 @@
 
         function getPage() {
             const params = new URLSearchParams(window.location.search);
-            return Math.max(0, parseInt(params.get("page") || "0", 10));
+            return Math.max(1, parseInt(params.get("page") || "1", 10));
         }
 
         function setPage(page) {
@@ -325,11 +328,12 @@
         }
 
         function nextPage() {
-            if (lastFetchCount < 420) return; // não avança
+            if (!next) return; // não avança
             setPage(getPage() + 1);
         }
 
         function prevPage() {
+            if (!prev) return;
             setPage(getPage() - 1);
         }
 

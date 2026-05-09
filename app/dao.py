@@ -3,6 +3,7 @@ from datetime import datetime
 
 from app.db import execute, query, query_dict
 from app.extension import get_connection
+from app.helpers.time import timeslice
 
 # notification
 
@@ -389,7 +390,53 @@ def get_temperature_series(host_ip=None, device_type=None, name=None, start=None
     window_sql = "SELECT min(datetime(timestamp, 'localtime')), max(datetime(timestamp, 'localtime')) FROM metrics"
 
     window = query(window_sql + " WHERE " + " AND ".join(filters), params)
-    min_time, max_time = window[0][0], window[0][1]
-    start_obj, end_obj = datetime.strptime(min_time, "%Y-%m-%d %H:%M:%S"), datetime.strptime(max_time, "%Y-%m-%d %H:%M:%S")
-    print(start_obj, end_obj)
-    return window
+    if window[0][0] and window[0][1]:
+        min_time, max_time = window[0][0], window[0][1]
+        start_obj, end_obj = datetime.strptime(min_time, "%Y-%m-%d %H:%M:%S"), datetime.strptime(max_time, "%Y-%m-%d %H:%M:%S")
+        slices = timeslice(start_obj, end_obj, time_window)
+        
+        first = 1
+        last = len(slices)
+        prev = page - 1 if page > first else None
+        next = page + 1 if page < last else None
+        try:
+            page = min(last, max(first, page))
+        except (ValueError, TypeError):
+            page = 1
+            
+        query_sql = "SELECT datetime(timestamp, 'localtime'), host_name, host_ip, device_type, name, value FROM metrics"
+        
+        start_obj, end_obj = slices[page - 1]
+        new_start, new_end = start_obj.isoformat(), end_obj.isoformat()
+        
+        filters.append("datetime(timestamp, 'localtime') >= datetime(?) AND datetime(timestamp, 'localtime') < datetime(?)")
+        params.append(new_start)
+        params.append(new_end)
+        
+        data = [
+            {
+                "timestamp": r[0],
+                "hostname": r[1],
+                "host_ip": r[2],
+                "device_type": r[3],
+                "name": r[4],
+                "value": r[5]
+            }
+            for r in query(query_sql + " WHERE " + " AND ".join(filters) + " ORDER BY timestamp ASC", params)
+        ]
+
+    else:
+        first = None
+        last = None
+        prev = None
+        next = None
+        data = None
+    
+    return {
+        "first": first,
+        "last": last,
+        "prev": prev,
+        "next": next,
+        "page": page,
+        "data": data
+    }

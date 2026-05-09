@@ -261,6 +261,4 @@ def temperature_series():
     except:
         page = 0
 
-    rows = get_temperature_series(host_ip, device_type, name, start, end, page)
-
-    return jsonify(rows)
+    return jsonify(get_temperature_series(host_ip, device_type, name, start, end, page))
