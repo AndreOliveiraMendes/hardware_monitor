@@ -1,7 +1,9 @@
 from flask import current_app
 
-from app.dao import get_heat_score, insert_metric, push_notification, update_heat_score
+from app.dao import (get_heat_score, insert_metric, push_notification,
+                     update_heat_score)
 from config import LEVEL_ORDER, TEMP_RULES
+
 
 def apply_temp_score(device_type, temp, score):
     rules = TEMP_RULES.get(device_type, [])

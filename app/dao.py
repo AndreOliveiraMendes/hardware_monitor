@@ -359,7 +359,6 @@ def get_daily_temperature_picks(host_ip = None, device_type=None, name=None, pag
         "has_prev": page > 0
     }
 
-# TODO: terminar isso
 def get_temperature_series(host_ip=None, device_type=None, name=None, start=None, end=None, page=0, time_window=1):
     
     filters = ["type = ? and value IS NOT NULL"]

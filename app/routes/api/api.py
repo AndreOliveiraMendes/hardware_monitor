@@ -247,7 +247,6 @@ def get_hscore():
 def get_ahscore():
     return jsonify(get_all_heat_scores())
 
-# TODO: terminar isso
 @bp.route("/temperature-series")
 def temperature_series():
     host_ip = request.args.get("host_ip")
