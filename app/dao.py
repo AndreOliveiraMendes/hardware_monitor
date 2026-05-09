@@ -408,8 +408,11 @@ def get_temperature_series(host_ip=None, device_type=None, name=None, start=None
         
         start_obj, end_obj = slices[page - 1]
         new_start, new_end = start_obj.isoformat(), end_obj.isoformat()
+        op = "<"
+        if page == last:
+            op = "<="
         
-        filters.append("datetime(timestamp, 'localtime') >= datetime(?) AND datetime(timestamp, 'localtime') < datetime(?)")
+        filters.append(f"datetime(timestamp, 'localtime') >= datetime(?) AND datetime(timestamp, 'localtime') {op} datetime(?)")
         params.append(new_start)
         params.append(new_end)
         
