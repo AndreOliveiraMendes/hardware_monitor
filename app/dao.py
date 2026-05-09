@@ -3,6 +3,7 @@ from datetime import datetime
 
 from app.db import execute, query, query_dict
 from app.extension import get_connection
+from app.helpers.time import timeslice
 
 # notification
 
@@ -357,43 +358,88 @@ def get_daily_temperature_picks(host_ip = None, device_type=None, name=None, pag
         "has_next": (page + 1) * per_page < total,
         "has_prev": page > 0
     }
-    
-def get_temperature_series(host_ip=None, device_type=None, name=None, start=None, end=None, page=0, per_page=420):
-    query_sql = """
-        SELECT datetime(timestamp, 'localtime'), host_name, host_ip, device_type, name, value
-        FROM metrics
-        WHERE type = 'temperature' and value IS NOT NULL
-    """
 
-    params = []
+# TODO: terminar isso
+def get_temperature_series(host_ip=None, device_type=None, name=None, start=None, end=None, page=0, time_window=1):
+    
+    filters = ["type = ? and value IS NOT NULL"]
+    params = ['temperature']
     
     if host_ip:
-        query_sql += " AND host_ip = ?"
+        filters.append("host_ip = ?")
         params.append(host_ip)
 
     if device_type:
-        query_sql += " AND device_type = ?"
+        filters.append("device_type = ?")
         params.append(device_type)
 
     if name:
-        query_sql += " AND name = ?"
+        filters.append("name = ?")
         params.append(name)
 
     if start:
-        start = datetime.fromisoformat(start)
-        query_sql += " AND datetime(timestamp, 'localtime') >= ?"
+        #start = datetime.fromisoformat(start)
+        filters.append("datetime(timestamp, 'localtime') >= ?")
         params.append(start)
 
     if end:
-        end = datetime.fromisoformat(end)
-        query_sql += " AND datetime(timestamp, 'localtime') <= ?"
+        #end = datetime.fromisoformat(end)
+        filters.append("datetime(timestamp, 'localtime') <= ?")
         params.append(end)
 
-    query_sql += " ORDER BY timestamp LIMIT ?"
-    params.append(per_page)
-    
-    if page:
-        query_sql += f" OFFSET ?"
-        params.append(page * per_page)
+    window_sql = "SELECT min(datetime(timestamp, 'localtime')), max(datetime(timestamp, 'localtime')) FROM metrics"
 
-    return query(query_sql, params)
+    window = query(window_sql + " WHERE " + " AND ".join(filters), params)
+    if window[0][0] and window[0][1]:
+        min_time, max_time = window[0][0], window[0][1]
+        start_obj, end_obj = datetime.strptime(min_time, "%Y-%m-%d %H:%M:%S"), datetime.strptime(max_time, "%Y-%m-%d %H:%M:%S")
+        slices = timeslice(start_obj, end_obj, time_window)
+        
+        first = 1
+        last = len(slices)
+        prev = page - 1 if page > first else None
+        next = page + 1 if page < last else None
+        try:
+            page = min(last, max(first, page))
+        except (ValueError, TypeError):
+            page = 1
+            
+        query_sql = "SELECT datetime(timestamp, 'localtime'), host_name, host_ip, device_type, name, value FROM metrics"
+        
+        start_obj, end_obj = slices[page - 1]
+        new_start, new_end = start_obj.isoformat(), end_obj.isoformat()
+        op = "<"
+        if page == last:
+            op = "<="
+        
+        filters.append(f"datetime(timestamp, 'localtime') >= datetime(?) AND datetime(timestamp, 'localtime') {op} datetime(?)")
+        params.append(new_start)
+        params.append(new_end)
+        
+        data = [
+            {
+                "timestamp": r[0],
+                "hostname": r[1],
+                "host_ip": r[2],
+                "device_type": r[3],
+                "name": r[4],
+                "value": r[5]
+            }
+            for r in query(query_sql + " WHERE " + " AND ".join(filters) + " ORDER BY timestamp ASC", params)
+        ]
+
+    else:
+        first = None
+        last = None
+        prev = None
+        next = None
+        data = None
+    
+    return {
+        "first": first,
+        "last": last,
+        "prev": prev,
+        "next": next,
+        "page": page,
+        "data": data
+    }

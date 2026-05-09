@@ -40,8 +40,10 @@
     </form>
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
+            <button class="btn btn-sm btn-outline-secondary" onclick="firstPage()">Primeira</button>
             <button class="btn btn-sm btn-outline-secondary" onclick="prevPage()">← Anterior</button>
             <button class="btn btn-sm btn-outline-secondary" onclick="nextPage()">Próxima →</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="lastPage()">Ultima</button>
         </div>
         <div>
             Página: <span id="page-indicator">0</span>
@@ -72,7 +74,10 @@
         let chart;
         const selected = {{ selected|tojson }};
         let first = true;
-        let lastFetchCount = 0;
+        let firsp;
+        let lastp;
+        let prevp;
+        let nextp;
 
         function getColor(i) {
             const colors = [
@@ -86,8 +91,12 @@
             const params = new URLSearchParams(window.location.search);
 
             const res = await fetch(url + "?" + params.toString());
-            const rawData = await res.json();
-            lastFetchCount = rawData.length;
+            const rawoutput = await res.json();
+            const rawData = rawoutput.data;
+            prevp = rawoutput.prev;
+            nextp = rawoutput.next;
+            firstp = rawoutput.first;
+            lastp = rawoutput.last;
 
             if (!rawData || rawData.length === 0) {
                 if (chart) chart.destroy();
@@ -310,7 +319,7 @@
 
         function getPage() {
             const params = new URLSearchParams(window.location.search);
-            return Math.max(0, parseInt(params.get("page") || "0", 10));
+            return Math.max(1, parseInt(params.get("page") || "1", 10));
         }
 
         function setPage(page) {
@@ -325,12 +334,25 @@
         }
 
         function nextPage() {
-            if (lastFetchCount < 420) return; // não avança
+            if (!nextp) return; // não avança
             setPage(getPage() + 1);
         }
 
         function prevPage() {
+            if (!prevp) return;
             setPage(getPage() - 1);
+        }
+
+        function firstPage() {
+            console.log(firstp);
+            if (!firstp) return;
+            setPage(firstp);
+        }
+
+        function lastPage() {
+            console.log(lastp);
+            if (!lastp) return;
+            setPage(lastp);
         }
 
         function updatePageIndicator() {
