@@ -25,3 +25,7 @@
     width: 50vw;
     border-top: 2px dashed;
 }
+
+.config_form {
+    max-width: 600px;
+}

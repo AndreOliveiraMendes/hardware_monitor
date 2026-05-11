@@ -3,6 +3,7 @@ from flask import (Blueprint, current_app, jsonify, render_template, request,
 
 from app.dao import (get_all_heat_scores, get_filters, get_heat_score,
                      get_latest_metrics, get_metrics, get_temperature_series)
+from app.routes.meta.handler import load_config
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -191,8 +192,10 @@ def all_metrics():
     tipo_informacao = request.args.get("info_type")
     tipo_dispositivo = request.args.get("device_type")
     name = request.args.get("name")
+    config = load_config()
+    per_page = int(config.get("metric_pagination", 100))
 
-    result = get_metrics(start, end, host_ip, tipo_informacao, tipo_dispositivo, name, page)
+    result = get_metrics(start, end, host_ip, tipo_informacao, tipo_dispositivo, name, page, per_page=per_page)
 
     data = []
     for row in result["data"]:
@@ -254,10 +257,12 @@ def temperature_series():
     name = request.args.get("name")
     start = request.args.get("start")
     end = request.args.get("end")
+    config = load_config()
+    time_window = int(config.get("time_window", 1))
 
     try:
         page = int(request.args.get("page", 0))
     except:
         page = 0
 
-    return jsonify(get_temperature_series(host_ip, device_type, name, start, end, page))
+    return jsonify(get_temperature_series(host_ip, device_type, name, start, end, page, time_window=time_window))

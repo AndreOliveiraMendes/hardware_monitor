@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request
 
 from app.dao import get_daily_temperature_picks
+from app.routes.meta.handler import load_config
 from config import TEMP_LEVELS
 
 bp = Blueprint('visualization', __name__, url_prefix='/visualization')
@@ -50,6 +51,8 @@ def min_max_temp():
     host_ip = request.args.get("host_ip")
     device_type = request.args.get("device_type")
     name = request.args.get("name")
+    config = load_config()
+    per_page = int(config.get("minmax_pagination", 100))
 
     try:
         page = int(request.args.get("page", 0))
@@ -58,7 +61,7 @@ def min_max_temp():
 
     page = max(page, 0)
 
-    result = get_daily_temperature_picks(host_ip, device_type, name, page)
+    result = get_daily_temperature_picks(host_ip, device_type, name, page, per_page=per_page)
 
     return render_template(
         "visualization/minmax.html",
