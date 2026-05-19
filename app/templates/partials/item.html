@@ -1,0 +1,21 @@
+<li class="list-group-item">
+    <div class="d-flex justify-content-between align-items-start">
+        <div>
+            <strong>{{ item.nome }}</strong>
+            <br>
+            <small class="text-muted">{{ item.ts }}</small>
+        </div>
+        <span class="badge {% if item.status == 'ok' %}bg-success {% elif item.status == 'warning' %}bg-warning text-dark {% elif item.status == 'high' %}bg-high {% elif item.status == 'critical' %}bg-danger {% else %}bg-secondary{% endif %}">
+            {{ item.status }}
+        </span>
+    </div>
+    {% if item.raw >= 0 %}
+        <div class="progress mt-2">
+            <div class="progress-bar {% if item.status == 'ok' %}bg-success {% elif item.status == 'warning' %}bg-warning {% elif item.status == 'high' %}bg-high {% elif item.status == 'critical' %}bg-danger {% endif %}"
+                 style="width: {{ item.valor }}%"></div>
+        </div>
+        <small class="text-muted">score: {{ item.raw }}</small>
+    {% else %}
+        <small class="text-muted">sem leitura</small>
+    {% endif %}
+</li>

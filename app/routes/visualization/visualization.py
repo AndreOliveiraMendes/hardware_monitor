@@ -1,8 +1,12 @@
-from flask import Blueprint, render_template, request
+from collections import defaultdict
+
+from flask import Blueprint, render_template, request, url_for
 
 from app.dao import get_daily_temperature_picks
 from app.routes.meta.handler import load_config
+from app.routes.visualization.handler import get_level
 from config import TEMP_LEVELS
+import requests
 
 bp = Blueprint('visualization', __name__, url_prefix='/visualization')
 
@@ -73,3 +77,36 @@ def min_max_temp():
             "name": name
         }
     )
+    
+@bp.route("/scoreboard")
+def scoreboard():
+    data = requests.get(url_for('api.get_ahscore', _external=True)).json()
+
+    hosts = defaultdict(lambda: {"CPU": [], "disk": []})
+
+    for ip, tipo, nome, score, status, ts in data:
+        item = {
+            "nome": nome,
+            "valor": max(0, min(score, 100)),  # normaliza 0–100
+            "status": status,
+            "ts": ts,
+            "raw": score  # mantém original (ex: -1)
+        }
+
+        hosts[ip][tipo].append(item)
+
+    # 🔥 ordena hosts pelo pior score
+    def worst_score(host):
+        valores = [
+            i["valor"]
+            for t in host.values()
+            for i in t
+            if i["raw"] >= 0
+        ]
+        return max(valores) if valores else -1
+
+    hosts_sorted = dict(
+        sorted(hosts.items(), key=lambda h: worst_score(h[1]), reverse=True)
+    )
+
+    return render_template("visualization/scoreboard.html", hosts=hosts_sorted)
