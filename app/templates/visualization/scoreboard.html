@@ -8,36 +8,103 @@
 {% endblock style %}
 {% block content %}
     <h1 class="mb-4">📊 Hardware Monitor</h1>
-    <div class="row">
-        {% for host, tipos in hosts.items() %}
-            <div class="col-lg-6 col-xl-4 mb-4">
-                <div class="card shadow-sm h-100">
-                    <!-- header -->
-                    <div class="card-header bg-dark text-white d-flex justify-content-between">
-                        <strong>{{ host }}</strong>
+    <div id="scoreboard" class="row"></div>
+{% endblock content %}
+{% block script %}
+    <script>
+        async function fetchScoreboard() {
+            const res = await fetch("{{ url_for('api.get_ahscore') }}");
+            const data = await res.json();
+
+            const hosts = {};
+
+            // agrupa igual no backend
+            data.forEach(([ip, tipo, nome, score, status, ts]) => {
+                if (!hosts[ip]) {
+                    hosts[ip] = { CPU: [], disk: [] };
+                }
+
+                hosts[ip][tipo].push({
+                    nome,
+                    valor: Math.max(0, Math.min(score, 100)),
+                    raw: score,
+                    status,
+                    ts
+                });
+            });
+
+            render(hosts);
+        }
+
+        function badgeClass(status) {
+            if (status === "ok") return "bg-success";
+            if (status === "warning") return "bg-warning text-dark";
+            if (status === "high") return "bg-high";
+            if (status === "critical") return "bg-danger";
+            return "bg-secondary";
+        }
+
+        function renderItem(item) {
+            if (item.raw < 0) {
+                return `
+                <li class="list-group-item">
+                    <strong>${item.nome}</strong><br>
+                    <small class="text-muted">${item.ts}</small><br>
+                    <small class="text-muted">sem leitura</small>
+                </li>`;
+            }
+
+            return `
+            <li class="list-group-item">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <strong>${item.nome}</strong><br>
+                        <small class="text-muted">${item.ts}</small>
                     </div>
-                    <div class="card-body">
-                        <!-- CPU -->
-                        <h6 class="text-uppercase text-muted">CPU</h6>
-                        <ul class="list-group mb-3">
-                            {% for item in tipos["CPU"] %}
-                                {% include "partials/item.html" %}
-                            {% else %}
-                                <li class="list-group-item text-muted">sem dados</li>
-                            {% endfor %}
-                        </ul>
-                        <!-- DISK -->
-                        <h6 class="text-uppercase text-muted">Discos</h6>
-                        <ul class="list-group">
-                            {% for item in tipos["disk"] %}
-                                {% include "partials/item.html" %}
-                            {% else %}
-                                <li class="list-group-item text-muted">sem dados</li>
-                            {% endfor %}
-                        </ul>
+                    <span class="badge ${badgeClass(item.status)}">${item.status}</span>
+                </div>
+
+                <div class="progress mt-2">
+                    <div class="progress-bar ${badgeClass(item.status)}" style="width: ${item.valor}%"></div>
+                </div>
+
+                <small class="text-muted">score: ${item.raw}</small>
+            </li>`;
+        }
+
+        function render(hosts) {
+            const container = document.getElementById("scoreboard");
+            container.innerHTML = "";
+
+            Object.entries(hosts).forEach(([host, tipos]) => {
+                const card = `
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-dark text-white">
+                            ${host}
+                        </div>
+
+                        <div class="card-body">
+                            <h6 class="text-muted">CPU</h6>
+                            <ul class="list-group mb-3">
+                                ${tipos.CPU.map(renderItem).join("")}
+                            </ul>
+
+                            <h6 class="text-muted">Discos</h6>
+                            <ul class="list-group">
+                                ${tipos.disk.map(renderItem).join("")}
+                            </ul>
+                        </div>
                     </div>
                 </div>
-            </div>
-        {% endfor %}
-    </div>
-{% endblock content %}
+                `;
+
+                container.insertAdjacentHTML("beforeend", card);
+            });
+        }
+
+        // 🔄 auto refresh
+        fetchScoreboard();
+        setInterval(fetchScoreboard, 5000); // 5 segundos
+    </script>
+{% endblock script %}
