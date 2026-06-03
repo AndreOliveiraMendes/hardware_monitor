@@ -12,10 +12,7 @@ def apply_temp_score(device_type, temp, score):
         if temp < rule["max"]:
             delta = rule["delta"]
 
-            if delta < 0:
-                return max(0, score + delta)
-            else:
-                return min(100, score + delta)
+            return min(100, max(0, score + delta))
 
     return score
 
