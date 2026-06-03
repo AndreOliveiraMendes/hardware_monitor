@@ -73,3 +73,7 @@ def min_max_temp():
             "name": name
         }
     )
+    
+@bp.route("/scoreboard")
+def scoreboard():
+    return render_template("visualization/scoreboard.html")

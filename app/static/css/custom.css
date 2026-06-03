@@ -29,3 +29,8 @@
 .config_form {
     max-width: 600px;
 }
+
+.bg-orange {
+    background-color: #fd7e14 !important;
+    color: #fff;
+}
